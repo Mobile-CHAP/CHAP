@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Controlgroup - jQuery Mobile Demos</title>
+	    <link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
+	    <link rel="shortcut icon" href="favicon.ico">
+	    <script src="js/jquery.min.js"></script>
+	    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+		<script src="js/socket.io-1.4.5.js"></script>
+	    <style>
+			.center-wrapper{
+				position:absolute;
+			  text-align: center;
+			  right:0em;
+			  bottom:2em;
+			}
+			.center-wrapper * {
+			  margin: 0 auto;
+			  padding:0.75em;
+			}
+			.center-wrapper-inline * {
+			  margin: 0 2em;
+			}
+			
+			#mainBackground{
+				max-width:100%;
+				min-height:100%;
+				max-height:100%;
+				
+				position:absolute;
+				
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+			}
+			
+	    </style>
+		
+		<script>
+			var mouseIsDown = false;
+			var nInterval;
+			var socket = io.connect('http://192.168.0.100:8080');
+		
+			$(function(){
+
+				streamImage();
+				document.oncontextmenu = function() {return false;};
+
+				$(document).mousedown(function(e){
+
+					if ( e.button == 2 )
+					{ 
+						//alert('Right mouse button!'); 
+						return false; 
+					}
+
+					return true;
+				});
+				
+				$('.controlBtn').mousedown(function(e){
+					nInterval = setInterval(function() { buttonDown(e); }, 50);
+					//console.log(e.target.text);
+				}).mouseup(function() {
+					clearInterval(nInterval);
+				});
+				
+				socket.on('image', function(data) {
+					console.log("Client: Image name -> " + data);
+					streamImage(data, socket);
+				});
+			});
+			
+			
+			function streamImage(data, socket){
+			
+				var image = new Image();
+				image.onload = function () {
+					console.info("Client: Image loaded !");
+					var imageParent = document.getElementById("mainBackground");
+					imageParent.src = image.src;
+					socket.emit('imageUpdated', "updated");
+				}
+				image.onerror = function () {
+				   console.error("Client: Cannot load image");
+				   //do something else...
+				}
+				
+				image.src = "stream/"+data+".jpg";
+			}
+			
+			
+			function buttonDown(e){
+				//console.log(e.target.text);
+				
+				socket.emit('join', e.target.text);
+			}
+			
+		</script>
+	</head>
+	<body>
+	<div data-role="page" class="jqm-demos" data-quicklinks="true">
+		<img id="mainBackground"></img>
+	    <div role="main" class="ui-content jqm-content">
+
+				<div class="center-wrapper">
+				  <a href="#" class="ui-btn ui-shadow ui-icon-arrow-u ui-btn-icon-notext ui-corner-all controlBtn">u</a>
+				  <div class="center-wrapper-inline">
+				  				<a href="#" class="ui-btn ui-shadow ui-icon-arrow-l ui-btn-icon-notext ui-corner-all ui-btn-inline controlBtn">l</a>
+								<a href="#" class="ui-btn ui-shadow ui-icon-arrow-r ui-btn-icon-notext ui-corner-all ui-btn-inline controlBtn">r</a>
+				  </div>
+				  <a href="#" class="ui-btn ui-shadow ui-icon-arrow-d ui-btn-icon-notext ui-corner-all controlBtn">d</a>
+				</div>
+			
+		</div>
+	</div><!-- /panel -->
+
+</body>
+</html>
