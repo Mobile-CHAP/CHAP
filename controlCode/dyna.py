@@ -129,39 +129,27 @@ def vel_direc(v):
 	
 		
 if __name__ == '__main__':
-    import time
+
+	numID = 2
+	
+	Xvalue = raw_input("X Value:")
+	Yvalue = raw_input("Y Value:")
     
-    speedS = raw_input("Enter Speed: ")
-    speed = int(speedS)
-    X = raw_input("Enter X: ")
-	Y = raw_input("Enter Y: ")
-	mag, ta = polar(x,y)
-	v1, v2, v3 = velocity(mag, ta)
-	v1, v2, v3 = vel_direc(v1), vel_direc(v2), vel_direc(v3) 
-	 
     SPEED_REG = 32
     POS_REG = 30
-    positions_delay = list([(0,2), (1000,2), (3500,2),(0,2)])
-    ax12 = dynamixel()
+    mx28= dynamixel()
+	
     #test serial ports
-    print ax12.port.test_ports()
-    #test motors
-    print "moving dynamixel"
-    ax12.set_ax_reg(1, 6, ([(0),(0)]))
-    ax12.set_ax_reg(1, 8, ([(0),(0)]))
-    ax12.set_ax_reg(1, SPEED_REG, ([(speed%256),(speed>>8)]))
-    #test that the speed is set corectly
-    return_speed =  ax12.get_reg(1, ins=READDATA, regstart=SPEED_REG, rlength=1)
-    if return_speed:
-        print "set speed = ", speed, " dynamixel returned speed of ", return_speed[0]
-        if speed == return_speed[0]:
-            print"data send recieve test passed"  
-        for pos, delay in positions_delay:
-            ax12.set_ax_reg(1, POS_REG, ([(pos%256),(pos>>8)]))
-            #ax12.set_ax_reg(2, POS_REG, ([(pos%256),(pos>>8)])) 
-            print "Positon: " + str(pos)
-            time.sleep(delay)
-    else:
-        print "error setting and getting ax data"
-    print "test complete"
-            
+    print mx28.port.test_ports()
+
+	for i in range(0,numID):
+		mx28.set_ax_reg(i, 6, ([(0),(0)]))
+		mx28.set_ax_reg(i, 8, ([(0),(0)]))
+		
+	mag, ta = polar(Xvalue,Yvalue)
+	v1, v2, v3 = velocity(mag,ta)
+	v1, v2, v3 = vel_direc(v1), vel_direc(v2), vel_direc(v3)
+	
+	mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
+	mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
+	#mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
