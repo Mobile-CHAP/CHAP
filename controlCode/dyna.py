@@ -106,7 +106,7 @@ def polar(x,y):
 	vmax= 464;
 	ta= m.atan2(y, x)
 	mag= m.sqrt((x*x)+(y*y))
-	mag= ((mag>1)?1:mag)
+	mag = mag > 1 ? 1 : mag
 	mag= mag*vmax
 	ta= ta-1.5708
 	return 	mag, ta
