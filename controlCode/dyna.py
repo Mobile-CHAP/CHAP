@@ -145,7 +145,7 @@ if __name__ == '__main__':
     #test serial ports
     print mx28.port.test_ports()
 
-    for i in range(1,3):
+    for i in range(1,4):
         mx28.set_ax_reg(i, 6, ([(0),(0)]))
         mx28.set_ax_reg(i, 8, ([(0),(0)]))
 		
@@ -156,4 +156,4 @@ if __name__ == '__main__':
 	
     mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
     mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
-    #mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
+    mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
