@@ -10,7 +10,7 @@ sudo chmod a+rw /dev/"ttyUSB1"
 
 '''
 from Ports import Port
-
+import math as m
 # commands
 READDATA = 2
 WRITE_DATA = 3
@@ -102,13 +102,43 @@ class dynamixel():
         else: 
             print "no serial port open"#should I put in a question box to open the port
             
-            
+def polar(x,y):
+	vmax= 464;
+	ta= m.atan2(y, x);		//Converting to polar coordinates
+	mag= m.sqrt((x*x)+(y*y));	
+	mag= ((mag>1)?1:mag);
+	mag= mag*vmax;
+	ta= ta-1.5708;
+	return 	mag, ta
+
+def velocity(mag, ta):
+	v1= mag*cos(a-ta);                              // getting velocities of the each motors using Kinematic Equation
+				
+	v2= mag*cos(b-ta);
+				
+	v3= mag*cos(c-ta);
+	return v1, v2, v3
+
+def vel_direc(v):
+	if v<0:
+		v= m.fabs(v)
+	else:
+		v= m.fabs(v)
+		v= v+1023
+	return v
+	
+		
 if __name__ == '__main__':
     import time
     
     speedS = raw_input("Enter Speed: ")
     speed = int(speedS)
-    
+    X = raw_input("Enter X: ")
+	Y = raw_input("Enter Y: ")
+	mag, ta = polar(x,y)
+	v1, v2, v3 = velocity(mag, ta)
+	v1, v2, v3 = vel_direc(v1), vel_direc(v2), vel_direc(v3) 
+	 
     SPEED_REG = 32
     POS_REG = 30
     positions_delay = list([(0,2), (1000,2), (3500,2),(0,2)])
