@@ -103,37 +103,41 @@ class dynamixel():
             print "no serial port open"#should I put in a question box to open the port
             
 def polar(x,y):
-	vmax= 464;
-	ta= m.atan2(y, x)
-	mag= m.sqrt((x*x)+(y*y))
-	mag = 1 if mag > 1 else mag
-	mag= mag*vmax
-	ta= ta-1.5708
-	return 	mag, ta
+    vmax= 464;
+    ta= m.atan2(y, x)
+    mag= m.sqrt((x*x)+(y*y))
+    mag = 1 if mag > 1 else mag
+    mag= mag*vmax
+    ta= ta-1.5708
+    return mag, ta
 
 def velocity(mag, ta):
-	v1= mag*cos(a-ta)
-	v2= mag*cos(b-ta)
-	v3= mag*cos(c-ta)
+    a = 0.4974189
+    b = 2.6441739
+    c = 4.71239
+    v1 = mag*m.cos(a-ta)
+    v2 = mag*m.cos(b-ta)
+    v3 = mag*m.cos(c-ta)
 	
-	return v1, v2, v3
+    return int(v1), int(v2), int(v3)
 
 def vel_direc(v):
-	if v<0:
-		v= m.fabs(v)
-	else:
-		v= m.fabs(v)
-		v= v+1023
-	return v
-	
+    if v<0:
+        v= m.fabs(v)
+    else:
+        v= m.fabs(v)
+        v= v+1024
+    return int(v)	
 		
 if __name__ == '__main__':
 
-	numID = 2
+    numID = 2
 	
-	Xvalue = raw_input("X Value:")
-	Yvalue = raw_input("Y Value:")
-    
+    Xvalue = raw_input("X Value:")
+    Yvalue = raw_input("Y Value:")
+    Xvalue = float(Xvalue)
+    Yvalue = float(Yvalue)    
+
     SPEED_REG = 32
     POS_REG = 30
     mx28= dynamixel()
@@ -141,14 +145,15 @@ if __name__ == '__main__':
     #test serial ports
     print mx28.port.test_ports()
 
-	for i in range(0,numID):
-		mx28.set_ax_reg(i, 6, ([(0),(0)]))
-		mx28.set_ax_reg(i, 8, ([(0),(0)]))
+    for i in range(1,3):
+        mx28.set_ax_reg(i, 6, ([(0),(0)]))
+        mx28.set_ax_reg(i, 8, ([(0),(0)]))
 		
-	mag, ta = polar(Xvalue,Yvalue)
-	v1, v2, v3 = velocity(mag,ta)
-	v1, v2, v3 = vel_direc(v1), vel_direc(v2), vel_direc(v3)
+    mag, ta = polar(Xvalue,Yvalue)
+    v1, v2, v3 = velocity(mag,ta)
+    v1, v2, v3 = vel_direc(v1), vel_direc(v2), vel_direc(v3)
+    print v1, v2, v3
 	
-	mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
-	mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
-	#mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
+    mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
+    mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
+    #mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
