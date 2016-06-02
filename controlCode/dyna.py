@@ -104,19 +104,18 @@ class dynamixel():
             
 def polar(x,y):
 	vmax= 464;
-	ta= m.atan2(y, x);		//Converting to polar coordinates
-	mag= m.sqrt((x*x)+(y*y));	
-	mag= ((mag>1)?1:mag);
-	mag= mag*vmax;
-	ta= ta-1.5708;
+	ta= m.atan2(y, x)
+	mag= m.sqrt((x*x)+(y*y))
+	mag= ((mag>1)?1:mag)
+	mag= mag*vmax
+	ta= ta-1.5708
 	return 	mag, ta
 
 def velocity(mag, ta):
-	v1= mag*cos(a-ta);                              // getting velocities of the each motors using Kinematic Equation
-				
-	v2= mag*cos(b-ta);
-				
-	v3= mag*cos(c-ta);
+	v1= mag*cos(a-ta)
+	v2= mag*cos(b-ta)
+	v3= mag*cos(c-ta)
+	
 	return v1, v2, v3
 
 def vel_direc(v):
