@@ -8,12 +8,11 @@
 	    <link rel="shortcut icon" href="favicon.ico">
 	    <script src="js/jquery.min.js"></script>
 	    <script src="js/jquery.mobile-1.4.5.min.js"></script>
-		<script src="js/socket.io-1.4.5.js"></script>
 	    <style>
 			.center-wrapper{
 				position:absolute;
 			  text-align: center;
-			  right:0em;
+			  right:2em;
 			  bottom:2em;
 			}
 			.center-wrapper * {
@@ -22,6 +21,16 @@
 			}
 			.center-wrapper-inline * {
 			  margin: 0 2em;
+			}
+			
+			#rightStick {
+				width: 200px;
+				height: 200px;
+				padding:0;
+				-webkit-border-radius: 150px;
+				-moz-border-radius: 150px;
+				border-radius: 150px;
+				background: red;
 			}
 			
 			#mainBackground{
@@ -41,7 +50,10 @@
 		<script>
 			var mouseIsDown = false;
 			var nInterval;
-			var socket = io.connect('http://192.168.0.100:8080');
+			var socketController = new WebSocket("ws://localhost:9001");
+			var socketStreamer = new WebSocket("ws://localhost:9002");
+			
+			var mouseLocation;
 		
 			$(function(){
 
@@ -59,42 +71,70 @@
 					return true;
 				});
 				
-				$('.controlBtn').mousedown(function(e){
-					nInterval = setInterval(function() { buttonDown(e); }, 50);
-					//console.log(e.target.text);
-				}).mouseup(function() {
-					clearInterval(nInterval);
+				$( '#rightStick' ).mousedown(function(e){
+				
+					mouseLocation = e;
+				
+					rightControllerUsed();
+					nInterval = setInterval(function(){
+						rightControllerUsed(e);
+					},50);
+					
+					return false;
+				});
+				$( '#rightStick' ).mousemove(function(e){
+					mouseLocation = e;
+				});
+				$( '#rightStick' ).mouseup(function(){
+					rightControllerReleased();
+					
+					return false;
+				});
+				$( '#rightStick' ).mouseout(function(){
+					rightControllerReleased();
+					
+					return false;
 				});
 				
-				socket.on('image', function(data) {
-					console.log("Client: Image name -> " + data);
-					streamImage(data, socket);
-				});
+				
+				socketStreamer.onmessage = function(evt) {
+					console.log("Client: Image name -> " + evt.data);
+					streamImage(evt.data);
+				};
+				
 			});
 			
-			
-			function streamImage(data, socket){
-			
-				var image = new Image();
-				image.onload = function () {
-					console.info("Client: Image loaded !");
-					var imageParent = document.getElementById("mainBackground");
-					imageParent.src = image.src;
-					socket.emit('imageUpdated', "updated");
-				}
-				image.onerror = function () {
-				   console.error("Client: Cannot load image");
-				   //do something else...
-				}
+			function rightControllerUsed(){
+				var offset = $('#rightStick').offset();
+				var width = $('#rightStick').width();
+				var height = $('#rightStick').height();
+				var x = mouseLocation.pageX - (offset.left+(width/2));
+				var y = mouseLocation.pageY - (offset.top+(height/2));
 				
-				image.src = "stream/"+data+".jpg";
+				//console.log("Click: " + x/100 + " " + y/100);
+				var result = [x/100,y/100];
+				socketController.send(result);
+			}
+			function rightControllerReleased(){
+				clearInterval(nInterval);
+				socketController.send([0,0]);
 			}
 			
 			
-			function buttonDown(e){
-				//console.log(e.target.text);
+			function streamImage(data){
+			
+				var image = new Image();
+				image.onload = function () {
+					console.info("Client: Image loaded");
+					var imageParent = document.getElementById("mainBackground");
+					imageParent.src = image.src;
+					socketStreamer.send("Send image");
+				}
+				image.onerror = function () {
+				   console.error("Client: Cannot load image");
+				}
 				
-				socket.emit('join', e.target.text);
+				image.src = "stream/" + data + ".jpg";
 			}
 			
 		</script>
@@ -105,12 +145,7 @@
 	    <div role="main" class="ui-content jqm-content">
 
 				<div class="center-wrapper">
-				  <a href="#" class="ui-btn ui-shadow ui-icon-arrow-u ui-btn-icon-notext ui-corner-all controlBtn">u</a>
-				  <div class="center-wrapper-inline">
-				  				<a href="#" class="ui-btn ui-shadow ui-icon-arrow-l ui-btn-icon-notext ui-corner-all ui-btn-inline controlBtn">l</a>
-								<a href="#" class="ui-btn ui-shadow ui-icon-arrow-r ui-btn-icon-notext ui-corner-all ui-btn-inline controlBtn">r</a>
-				  </div>
-				  <a href="#" class="ui-btn ui-shadow ui-icon-arrow-d ui-btn-icon-notext ui-corner-all controlBtn">d</a>
+				  <div id="rightStick"></div>
 				</div>
 			
 		</div>

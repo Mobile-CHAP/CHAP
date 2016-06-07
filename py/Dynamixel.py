@@ -127,28 +127,4 @@ def vel_direc(v):
     else:
         v= m.fabs(v)
         v= v+1024
-    return int(v)	
-		
-if __name__ == '__main__':
-
-    numID = 2
-	
-    Xvalue = raw_input("Arm speed:")
-    Xvalue = int(Xvalue)
-
-    SPEED_REG = 32
-    POS_REG = 30
-    mx28= dynamixel()
-	
-    #test serial ports
-    print mx28.port.test_ports()
-
-    for i in range(1,5):
-        mx28.set_ax_reg(i, 6, ([(0),(0)]))
-        mx28.set_ax_reg(i, 8, ([(0),(0)]))
-			
-    v4 = Xvalue
-    #mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
-    #mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
-    #mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
-    mx28.set_ax_reg(4, SPEED_REG, ([(v4%256),(v4>>8)]))
+    return int(v)
