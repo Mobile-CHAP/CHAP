@@ -6,7 +6,6 @@ app = Flask(__name__, static_url_path='/static')
 def root():
     return render_template("index.html", title = 'Controller')
     
-
 def gen(camera):
     while True:
         frame = camera.get_frame()
