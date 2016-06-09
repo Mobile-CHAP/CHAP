@@ -12,8 +12,6 @@
 			.center-wrapper{
 				position:absolute;
 			  text-align: center;
-			  right:2em;
-			  bottom:2em;
 			}
 			.center-wrapper * {
 			  margin: 0 auto;
@@ -21,6 +19,30 @@
 			}
 			.center-wrapper-inline * {
 			  margin: 0 2em;
+			}
+			
+			#right-wrapper{
+				right:10em;
+				bottom:5em;
+			}
+			#left-wrapper{
+				left:10em;
+				bottom:10em;
+			}
+				
+			#leftUpDown {
+				position:relative;
+				width: 50px;
+				height: 200px;
+				bottom:-7.5em;
+				padding:0;
+				background: red;
+			}
+			#leftLeftRight {
+				width: 200px;
+				height: 50px;
+				padding:0;
+				background: blue;
 			}
 			
 			#rightStick {
@@ -32,6 +54,8 @@
 				border-radius: 150px;
 				background: red;
 			}
+			
+			
 			
 			#mainBackground{
 				max-width:100%;
@@ -52,6 +76,7 @@
 			var nInterval;
 			var socketController = new WebSocket("ws://localhost:9001");
 			var socketStreamer = new WebSocket("ws://localhost:9002");
+			var controlName;
 			
 			var mouseLocation;
 		
@@ -71,31 +96,31 @@
 					return true;
 				});
 				
-				$( '#rightStick' ).mousedown(function(e){
+				$( '.controller' ).mousedown(function(e){
 				
 					mouseLocation = e;
-				
-					rightControllerUsed();
+					controlName = $(this).attr('id');
+					
+					controllerUsed();
 					nInterval = setInterval(function(){
-						rightControllerUsed(e);
+						controllerUsed();
 					},50);
 					
 					return false;
 				});
-				$( '#rightStick' ).mousemove(function(e){
+				$( '.controller' ).mousemove(function(e){
 					mouseLocation = e;
 				});
-				$( '#rightStick' ).mouseup(function(){
-					rightControllerReleased();
+				$( '.controller' ).mouseup(function(){
+					controllerReleased();
 					
 					return false;
 				});
-				$( '#rightStick' ).mouseout(function(){
-					rightControllerReleased();
+				$( '.controller' ).mouseout(function(){
+					controllerReleased();
 					
 					return false;
 				});
-				
 				
 				socketStreamer.onmessage = function(evt) {
 					console.log("Client: Image name -> " + evt.data);
@@ -104,7 +129,7 @@
 				
 			});
 			
-			function rightControllerUsed(){
+			function controllerUsed(){
 				var offset = $('#rightStick').offset();
 				var width = $('#rightStick').width();
 				var height = $('#rightStick').height();
@@ -112,10 +137,11 @@
 				var y = mouseLocation.pageY - (offset.top+(height/2));
 				
 				//console.log("Click: " + x/100 + " " + y/100);
-				var result = [x/100,y/100];
+				
+				var result = controlName+","+x/100+","+y/100;
 				socketController.send(result);
 			}
-			function rightControllerReleased(){
+			function controllerReleased(){
 				clearInterval(nInterval);
 				socketController.send([0,0]);
 			}
@@ -144,8 +170,13 @@
 		<img id="mainBackground"></img>
 	    <div role="main" class="ui-content jqm-content">
 
-				<div class="center-wrapper">
-				  <div id="rightStick"></div>
+				<div class="center-wrapper" id="right-wrapper">
+				  <div class="controller" id="rightStick"></div>
+				</div>
+				
+				<div class="center-wrapper" id="left-wrapper">
+				  <div class="controller" id="leftUpDown"></div>
+				  <div class="controller" id="leftLeftRight"></div>
 				</div>
 			
 		</div>

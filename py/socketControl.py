@@ -25,9 +25,12 @@ class ServerRobotController(WebSocketServerProtocol):
     def onMessage(self, payload, isBinary):
         message = payload.decode('utf8');
         print("Text message received: {0}".format(message))
-        # val = message.split(',',2)
-        # Xvalue = float(val[0])
-        # Yvalue = float(val[1])
+
+        #val = message.split(',',3)
+        #controlID = val[0]
+        #Xvalue = float(val[1])
+        #Yvalue = float(val[2])
+        #print("Control => " + controlID + "| Value:"+str(Xvalue)+","+str(Yvalue))
         
         # mag, ta = dy.polar(Xvalue,Yvalue)
         # v1, v2, v3 = dy.velocity(mag,ta)
