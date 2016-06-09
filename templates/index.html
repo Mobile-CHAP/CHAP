@@ -116,11 +116,6 @@
 					
 					return false;
 				});
-				$( '.controller' ).mouseout(function(){
-					controllerReleased();
-					
-					return false;
-				});
 				
 				socketStreamer.onmessage = function(evt) {
 					console.log("Client: Image name -> " + evt.data);

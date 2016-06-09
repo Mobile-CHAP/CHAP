@@ -1,4 +1,4 @@
-#import Dynamixel as dy
+import Dynamixel as dy
 
 # #test serial ports
 # print mx28.port.test_ports()
@@ -33,9 +33,9 @@ class ServerRobotController(WebSocketServerProtocol):
         print("Control => " + controlID + "| Value:"+str(Xvalue)+","+str(Yvalue))
         
         if controlID == "rightStick":
-            # mag, ta = dy.polar(Xvalue,Yvalue)
-            # v1, v2, v3 = dy.velocity(mag,ta)
-            # v1, v2, v3 = dy.vel_direc(v1), dy.vel_direc(v2), dy.vel_direc(v3)
+            mag, ta = dy.polar(Xvalue,Yvalue)
+            v1, v2, v3 = dy.velocity(mag,ta)
+            v1, v2, v3 = dy.vel_direc(v1), dy.vel_direc(v2), dy.vel_direc(v3)
             
             # mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
             # mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
@@ -44,7 +44,7 @@ class ServerRobotController(WebSocketServerProtocol):
             rotation = 100*Xvalue
         elif controlID == "leftUpDown":    
             v4 = 200*Yvalue
-            mx28.set_ax_reg(4, SPEED_REG, ([(v4%256),(v4>>8)]))
+            #mx28.set_ax_reg(4, SPEED_REG, ([(v4%256),(v4>>8)]))
             
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
