@@ -26,20 +26,26 @@ class ServerRobotController(WebSocketServerProtocol):
         message = payload.decode('utf8');
         print("Text message received: {0}".format(message))
 
-        #val = message.split(',',3)
-        #controlID = val[0]
-        #Xvalue = float(val[1])
-        #Yvalue = float(val[2])
-        #print("Control => " + controlID + "| Value:"+str(Xvalue)+","+str(Yvalue))
+        val = message.split(',',3)
+        controlID = val[0]
+        Xvalue = float(val[1])
+        Yvalue = float(val[2])
+        print("Control => " + controlID + "| Value:"+str(Xvalue)+","+str(Yvalue))
         
-        # mag, ta = dy.polar(Xvalue,Yvalue)
-        # v1, v2, v3 = dy.velocity(mag,ta)
-        # v1, v2, v3 = dy.vel_direc(v1), dy.vel_direc(v2), dy.vel_direc(v3)
-        
-        # mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
-        # mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
-        # mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
-
+        if controlID == "rightStick":
+            # mag, ta = dy.polar(Xvalue,Yvalue)
+            # v1, v2, v3 = dy.velocity(mag,ta)
+            # v1, v2, v3 = dy.vel_direc(v1), dy.vel_direc(v2), dy.vel_direc(v3)
+            
+            # mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
+            # mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
+            # mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
+        elif controlID == "leftLeftRight":
+            rotation = 100*Xvalue
+        elif controlID == "leftUpDown":    
+            v4 = 200*Yvalue
+            mx28.set_ax_reg(4, SPEED_REG, ([(v4%256),(v4>>8)]))
+            
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
 

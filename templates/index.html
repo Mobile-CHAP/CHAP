@@ -3,11 +3,10 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Controlgroup - jQuery Mobile Demos</title>
-	    <link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
+	<title>TeleController</title>
 	    <link rel="shortcut icon" href="favicon.ico">
-	    <script src="js/jquery.min.js"></script>
-	    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+		<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/jquery.mobile-1.4.5.min.js') }}"></script>
 	    <style>
 			.center-wrapper{
 				position:absolute;
@@ -74,8 +73,9 @@
 		<script>
 			var mouseIsDown = false;
 			var nInterval;
-			var socketController = new WebSocket("ws://localhost:9001");
-			var socketStreamer = new WebSocket("ws://localhost:9002");
+			var hostName = "192.168.0.104"
+			var socketController = new WebSocket("ws://"+hostName+":9001");
+			var socketStreamer = new WebSocket("ws://"+hostName+":9002");
 			var controlName;
 			
 			var mouseLocation;
@@ -143,7 +143,7 @@
 			}
 			function controllerReleased(){
 				clearInterval(nInterval);
-				socketController.send([0,0]);
+				socketController.send("None"+","+0+","+0);
 			}
 			
 			

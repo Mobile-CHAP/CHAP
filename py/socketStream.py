@@ -10,7 +10,7 @@ from autobahn.twisted.websocket import WebSocketServerProtocol, \
 # cap = cv2.VideoCapture(0)
 # imgDir = './public/stream/'
 
-class ServerRobotController(WebSocketServerProtocol):
+class ServerRobotVision(WebSocketServerProtocol):
 
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     log.startLogging(sys.stdout)
 
     factory = WebSocketServerFactory(u"ws://127.0.0.1:9002")
-    factory.protocol = ServerRobotController
+    factory.protocol = ServerRobotVision
     # factory.setProtocolOptions(maxConnections=2)
 
     reactor.listenTCP(9002, factory)
