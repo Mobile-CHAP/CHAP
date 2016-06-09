@@ -75,14 +75,12 @@
 			var nInterval;
 			var hostName = "192.168.0.104"
 			var socketController = new WebSocket("ws://"+hostName+":9001");
-			var socketStreamer = new WebSocket("ws://"+hostName+":9002");
 			var controlName;
 			
 			var mouseLocation;
 		
 			$(function(){
-
-				streamImage();
+			
 				document.oncontextmenu = function() {return false;};
 
 				$(document).mousedown(function(e){
@@ -113,14 +111,12 @@
 				});
 				$( '.controller' ).mouseup(function(){
 					controllerReleased();
-					
 					return false;
 				});
-				
-				socketStreamer.onmessage = function(evt) {
-					console.log("Client: Image name -> " + evt.data);
-					streamImage(evt.data);
-				};
+				$( '.controller' ).mouseleave(function(){
+					controllerReleased();
+					return false;
+				});
 				
 			});
 			
@@ -137,32 +133,15 @@
 				socketController.send(result);
 			}
 			function controllerReleased(){
-				clearInterval(nInterval);
 				socketController.send("None"+","+0+","+0);
-			}
-			
-			
-			function streamImage(data){
-			
-				var image = new Image();
-				image.onload = function () {
-					console.info("Client: Image loaded");
-					var imageParent = document.getElementById("mainBackground");
-					imageParent.src = image.src;
-					socketStreamer.send("Send image");
-				}
-				image.onerror = function () {
-				   console.error("Client: Cannot load image");
-				}
-				
-				image.src = "stream/" + data + ".jpg";
+				clearInterval(nInterval);
 			}
 			
 		</script>
 	</head>
 	<body>
 	<div data-role="page" class="jqm-demos" data-quicklinks="true">
-		<img id="mainBackground"></img>
+		<img id="mainBackground" src = "{{ url_for('video_feed') }}"></img>
 	    <div role="main" class="ui-content jqm-content">
 
 				<div class="center-wrapper" id="right-wrapper">
