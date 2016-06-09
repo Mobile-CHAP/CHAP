@@ -113,7 +113,10 @@
 				});
 				$( '.controller' ).mouseup(function(){
 					controllerReleased();
-					
+					return false;
+				});
+				$( '.controller' ).mouseleave(function(){
+					controllerReleased();
 					return false;
 				});
 				
@@ -137,8 +140,8 @@
 				socketController.send(result);
 			}
 			function controllerReleased(){
-				clearInterval(nInterval);
 				socketController.send("None"+","+0+","+0);
+				clearInterval(nInterval);
 			}
 			
 			
@@ -155,7 +158,7 @@
 				   console.error("Client: Cannot load image");
 				}
 				
-				image.src = "stream/" + data + ".jpg";
+				image.src = "{{ url_for('video_feed') }}";
 			}
 			
 		</script>

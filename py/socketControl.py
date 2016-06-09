@@ -24,7 +24,7 @@ class ServerRobotController(WebSocketServerProtocol):
 
     def onMessage(self, payload, isBinary):
         message = payload.decode('utf8');
-        print("Text message received: {0}".format(message))
+        #print("Text message received: {0}".format(message))
 
         val = message.split(',',3)
         controlID = val[0]
