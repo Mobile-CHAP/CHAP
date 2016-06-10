@@ -33,15 +33,29 @@
 				position:relative;
 				width: 50px;
 				height: 200px;
+				left:-5em;
 				bottom:-7.5em;
 				padding:0;
-				background: red;
+				/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#8e8e8e+0,f1f1f1+47,d3d3d3+50,f1f1f1+53,8e8e8e+100 */
+				background: #8e8e8e; /* Old browsers */
+				background: -moz-linear-gradient(top,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
+				background: -webkit-linear-gradient(top,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
+				background: linear-gradient(to bottom,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=0 ); /* IE6-9 */
+
 			}
 			#leftLeftRight {
+				position:relative;
 				width: 200px;
 				height: 50px;
+				left:3em;
 				padding:0;
-				background: blue;
+				background: #8e8e8e; /* Old browsers */
+				background: -moz-linear-gradient(left,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
+				background: -webkit-linear-gradient(left,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
+				background: linear-gradient(to right,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 */
+
 			}
 			
 			#rightStick {
@@ -51,7 +65,13 @@
 				-webkit-border-radius: 150px;
 				-moz-border-radius: 150px;
 				border-radius: 150px;
-				background: red;
+				/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#8e8e8e+0,f1f1f1+47,d3d3d3+50,f1f1f1+53,8e8e8e+100 */
+				background: #8e8e8e; /* Old browsers */
+				background: -moz-radial-gradient(center, ellipse cover,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
+				background: -webkit-radial-gradient(center, ellipse cover,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
+				background: radial-gradient(ellipse at center,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
 			}
 			
 			
@@ -69,75 +89,6 @@
 			}
 			
 	    </style>
-		
-		<script>
-			var mouseIsDown = false;
-			var nInterval;
-			var hostName = "192.168.0.104"
-			var socketController = new WebSocket("ws://"+hostName+":9001");
-			var controlName;
-			
-			var mouseLocation;
-		
-			$(function(){
-			
-				document.oncontextmenu = function() {return false;};
-
-				$(document).mousedown(function(e){
-
-					if ( e.button == 2 )
-					{ 
-						//alert('Right mouse button!'); 
-						return false; 
-					}
-
-					return true;
-				});
-				
-				$( '.controller' ).mousedown(function(e){
-				
-					mouseLocation = e;
-					controlName = $(this).attr('id');
-					
-					controllerUsed();
-					nInterval = setInterval(function(){
-						controllerUsed();
-					},50);
-					
-					return false;
-				});
-				$( '.controller' ).mousemove(function(e){
-					mouseLocation = e;
-				});
-				$( '.controller' ).mouseup(function(){
-					controllerReleased();
-					return false;
-				});
-				$( '.controller' ).mouseleave(function(){
-					controllerReleased();
-					return false;
-				});
-				
-			});
-			
-			function controllerUsed(){
-				var offset = $('#rightStick').offset();
-				var width = $('#rightStick').width();
-				var height = $('#rightStick').height();
-				var x = mouseLocation.pageX - (offset.left+(width/2));
-				var y = mouseLocation.pageY - (offset.top+(height/2));
-				
-				//console.log("Click: " + x/100 + " " + y/100);
-				
-				var result = controlName+","+x/100+","+y/100;
-				socketController.send(result);
-			}
-			function controllerReleased(){
-				socketController.send("None"+","+0+","+0);
-				clearInterval(nInterval);
-			}
-			
-		</script>
 	</head>
 	<body>
 	<div data-role="page" class="jqm-demos" data-quicklinks="true">
@@ -155,6 +106,75 @@
 			
 		</div>
 	</div><!-- /panel -->
+	<script>
+		var mouseIsDown = false;
+		var nInterval;
+		var hostName = "192.168.0.104"
+		var socketController = new WebSocket("ws://"+hostName+":9001");
+		var currentController;
+		
+		var mouseLocation;
+	
+		$(function(){
+		
+			document.oncontextmenu = function() {return false;};
 
+			$(document).mousedown(function(e){
+
+				if ( e.button == 2 )
+				{ 
+					//alert('Right mouse button!'); 
+					return false; 
+				}
+
+				return true;
+			});
+			
+			$( '.controller' ).mousedown(function(e){
+			
+				mouseLocation = e;
+				currentController = this;
+				mouseIsDown = true;
+				
+				controllerUsed();
+				nInterval = setInterval(function(){
+					controllerUsed();
+				},50);
+				
+				return false;
+			});
+			$( '.controller' ).mousemove(function(e){
+				mouseLocation = e;
+			});
+			$( 'body' ).mouseup(function(){
+				if(mouseIsDown){
+					controllerReleased();
+				}
+				return false;
+			});
+			
+		});
+		
+		function controllerUsed(){			
+			var offset = $(currentController).offset();
+			var width = $(currentController).width();
+			var height = $(currentController).height();
+			var x = mouseLocation.pageX - (offset.left+(width/2));
+			var y = mouseLocation.pageY - (offset.top+(height/2));
+			
+			//console.log("Click: " + x/100 + " " + y/100);
+			var controlName = $(currentController).attr('id');
+			//console.log(controlName);
+			
+			var result = controlName+","+x/100+","+y/100;
+			socketController.send(result);
+		}
+		function controllerReleased(){
+			socketController.send("None"+","+0+","+0);
+			mouseIsDown = false;
+			clearInterval(nInterval);
+		}
+		
+	</script>
 </body>
 </html>
