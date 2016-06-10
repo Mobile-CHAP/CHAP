@@ -8,48 +8,40 @@
 		<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/jquery.mobile-1.4.5.min.js') }}"></script>
 	    <style>
-			.center-wrapper{
-				position:absolute;
-			  text-align: center;
-			}
-			.center-wrapper * {
-			  margin: 0 auto;
-			  padding:0.75em;
-			}
-			.center-wrapper-inline * {
-			  margin: 0 2em;
+			html, body {
+				height: 95%;
 			}
 			
+			#container{
+				position: relative;
+				width:85%;
+				margin:0 auto;
+				top:70%;
+			}
 			#right-wrapper{
-				right:10em;
-				bottom:5em;
+				position: relative;
+				width: 200px;
+				height: 200px;
+				margin:2em;
+				float:right;
+				display:block;
 			}
 			#left-wrapper{
-				left:10em;
-				bottom:10em;
+				position: relative;
+				width: 200px;
+				height: 200px;
+				margin:2em;
+				float:left;
+				display:block;
 			}
 				
 			#leftUpDown {
-				position:relative;
-				width: 50px;
-				height: 200px;
-				left:-5em;
-				bottom:-7.5em;
-				padding:0;
-				/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#8e8e8e+0,f1f1f1+47,d3d3d3+50,f1f1f1+53,8e8e8e+100 */
-				background: #8e8e8e; /* Old browsers */
-				background: -moz-linear-gradient(top,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
-				background: -webkit-linear-gradient(top,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
-				background: linear-gradient(to bottom,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=0 ); /* IE6-9 */
-
-			}
-			#leftLeftRight {
-				position:relative;
 				width: 200px;
 				height: 50px;
-				left:3em;
 				padding:0;
+				margin:0;
+				position:relative;
+
 				background: #8e8e8e; /* Old browsers */
 				background: -moz-linear-gradient(left,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
 				background: -webkit-linear-gradient(left,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
@@ -57,14 +49,31 @@
 				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 */
 
 			}
-			
-			#rightStick {
+			#leftLeftRight {
 				width: 200px;
-				height: 200px;
+				height: 50px;
 				padding:0;
+				margin:0;
+				position:relative;
+				
+				background: #8e8e8e; /* Old browsers */
+				background: -moz-linear-gradient(left,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
+				background: -webkit-linear-gradient(left,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
+				background: linear-gradient(to right,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 */
+
+			}
+			#leftStick {
+				position:relative;
+				width: 100%;
+				height: 100%;
+				padding:0;
+				margin:0;
 				-webkit-border-radius: 150px;
 				-moz-border-radius: 150px;
 				border-radius: 150px;
+				position:relative;
+				
 				/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#8e8e8e+0,f1f1f1+47,d3d3d3+50,f1f1f1+53,8e8e8e+100 */
 				background: #8e8e8e; /* Old browsers */
 				background: -moz-radial-gradient(center, ellipse cover,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
@@ -73,9 +82,26 @@
 				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 
 			}
-			
-			
-			
+			#rightStick {
+				position:relative;
+				width: 100%;
+				height: 100%;
+				padding:0;
+				margin:0;
+				-webkit-border-radius: 150px;
+				-moz-border-radius: 150px;
+				border-radius: 150px;
+				position:relative;
+				
+				/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#8e8e8e+0,f1f1f1+47,d3d3d3+50,f1f1f1+53,8e8e8e+100 */
+				background: #8e8e8e; /* Old browsers */
+				background: -moz-radial-gradient(center, ellipse cover,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
+				background: -webkit-radial-gradient(center, ellipse cover,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
+				background: radial-gradient(ellipse at center,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+			}
+
 			#mainBackground{
 				max-width:100%;
 				min-height:100%;
@@ -88,24 +114,53 @@
 				transform: translate(-50%, -50%);
 			}
 			
+			@media only screen and (max-width: 700px){
+				#container{
+					top:50%;
+				}
+				#right-wrapper {
+					width: 125px;
+					height: 125px;
+				}
+				#left-wrapper {
+					width: 125px;
+					height: 125px;
+				}
+			}
+			@media only screen and (max-width: 600px){
+				#right-wrapper {
+					width: 100px;
+					height: 100px;
+				}
+				#left-wrapper {
+					width: 100px;
+					height: 100px;
+				}
+			}
+			@media only screen and (max-height: 300px){
+				#container{
+					top:40%;
+				}
+			}
+			@media only screen and (max-height: 500px){
+				#container{
+					top:50%;
+				}
+			}
 	    </style>
 	</head>
 	<body>
-	<div data-role="page" class="jqm-demos" data-quicklinks="true">
 		<img id="mainBackground" src = "{{ url_for('video_feed') }}"></img>
-	    <div role="main" class="ui-content jqm-content">
 
-				<div class="center-wrapper" id="right-wrapper">
-				  <div class="controller" id="rightStick"></div>
-				</div>
-				
-				<div class="center-wrapper" id="left-wrapper">
-				  <div class="controller" id="leftUpDown"></div>
-				  <div class="controller" id="leftLeftRight"></div>
-				</div>
-			
+		<div id="container">
+		<div id="right-wrapper">
+		  <div class="controller" id="rightStick"></div>
 		</div>
-	</div><!-- /panel -->
+		
+		<div id="left-wrapper">
+		  <div class="controller" id="leftStick"></div>
+		</div>
+		</div>
 	<script>
 		var mouseIsDown = false;
 		var nInterval;
