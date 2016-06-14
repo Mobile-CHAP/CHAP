@@ -1,9 +1,21 @@
 from flask import Flask, stream_with_context, render_template, Response
 from camera import Camera
+import socket
 
 import gevent.monkey
 from gevent.wsgi import WSGIServer
 from gevent.pool import Pool
+
+import argparse
+
+serverIP = socket.gethostbyname(socket.gethostname());
+PORT = 8080
+parser = argparse.ArgumentParser(description='Select PORT to run server')
+parser.add_argument('port', metavar='P', type=int, nargs='?',
+                   help='Select PORT to run server')
+args = parser.parse_args()
+if(args.port):
+    PORT = args.port
 
 gevent.monkey.patch_all()
 app = Flask(__name__, static_url_path='/static')
@@ -12,6 +24,10 @@ camera = Camera()
 @app.route("/")
 def root():
     return render_template("index.html", title = 'Controller')
+
+@app.route("/joystick")
+def joystick():
+    return render_template("joystick.html",serverIPAddress=serverIP, title = 'Controller')
 
 @app.route('/video_feed')
 def video_feed():
@@ -28,9 +44,10 @@ def video_feed():
     return Response(stream_with_context(run_camera()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def run_server():
-    print "Server running on port 8080"
+    print "Server started " + str(serverIP)+ ":" + str(PORT)
     pool = Pool(5)
-    http_server = WSGIServer(('', 8080), app,spawn=pool)
+    app.debug = True
+    http_server = WSGIServer(('', PORT), app,spawn=pool)
     http_server.serve_forever()
     
 if __name__ == "__main__":

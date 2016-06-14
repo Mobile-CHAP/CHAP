@@ -2,154 +2,17 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta content="yes" name="apple-mobile-web-app-capable" />
+	<meta name="apple-touch-fullscreen" content="yes">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 	<title>TeleController</title>
 	    <link rel="shortcut icon" href="favicon.ico">
 		<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/jquery.mobile-1.4.5.min.js') }}"></script>
-	    <style>
-			html, body {
-				height: 95%;
-			}
-			
-			#container{
-				position: relative;
-				width:85%;
-				margin:0 auto;
-				top:70%;
-			}
-			#right-wrapper{
-				position: relative;
-				width: 200px;
-				height: 200px;
-				margin:2em;
-				float:right;
-				display:block;
-			}
-			#left-wrapper{
-				position: relative;
-				width: 200px;
-				height: 200px;
-				margin:2em;
-				float:left;
-				display:block;
-			}
-				
-			#leftUpDown {
-				width: 200px;
-				height: 50px;
-				padding:0;
-				margin:0;
-				position:relative;
-
-				background: #8e8e8e; /* Old browsers */
-				background: -moz-linear-gradient(left,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
-				background: -webkit-linear-gradient(left,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
-				background: linear-gradient(to right,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 */
-
-			}
-			#leftLeftRight {
-				width: 200px;
-				height: 50px;
-				padding:0;
-				margin:0;
-				position:relative;
-				
-				background: #8e8e8e; /* Old browsers */
-				background: -moz-linear-gradient(left,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
-				background: -webkit-linear-gradient(left,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
-				background: linear-gradient(to right,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 */
-
-			}
-			#leftStick {
-				position:relative;
-				width: 100%;
-				height: 100%;
-				padding:0;
-				margin:0;
-				-webkit-border-radius: 150px;
-				-moz-border-radius: 150px;
-				border-radius: 150px;
-				position:relative;
-				
-				/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#8e8e8e+0,f1f1f1+47,d3d3d3+50,f1f1f1+53,8e8e8e+100 */
-				background: #8e8e8e; /* Old browsers */
-				background: -moz-radial-gradient(center, ellipse cover,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
-				background: -webkit-radial-gradient(center, ellipse cover,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
-				background: radial-gradient(ellipse at center,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-
-			}
-			#rightStick {
-				position:relative;
-				width: 100%;
-				height: 100%;
-				padding:0;
-				margin:0;
-				-webkit-border-radius: 150px;
-				-moz-border-radius: 150px;
-				border-radius: 150px;
-				position:relative;
-				
-				/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#8e8e8e+0,f1f1f1+47,d3d3d3+50,f1f1f1+53,8e8e8e+100 */
-				background: #8e8e8e; /* Old browsers */
-				background: -moz-radial-gradient(center, ellipse cover,  #8e8e8e 0%, #f1f1f1 47%, #d3d3d3 50%, #f1f1f1 53%, #8e8e8e 100%); /* FF3.6-15 */
-				background: -webkit-radial-gradient(center, ellipse cover,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* Chrome10-25,Safari5.1-6 */
-				background: radial-gradient(ellipse at center,  #8e8e8e 0%,#f1f1f1 47%,#d3d3d3 50%,#f1f1f1 53%,#8e8e8e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8e8e8e', endColorstr='#8e8e8e',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-
-			}
-
-			#mainBackground{
-				max-width:100%;
-				min-height:100%;
-				max-height:100%;
-				
-				position:absolute;
-				
-				top: 50%;
-				left: 50%;
-				transform: translate(-50%, -50%);
-			}
-			
-			@media only screen and (max-width: 700px){
-				#container{
-					top:50%;
-				}
-				#right-wrapper {
-					width: 125px;
-					height: 125px;
-				}
-				#left-wrapper {
-					width: 125px;
-					height: 125px;
-				}
-			}
-			@media only screen and (max-width: 600px){
-				#right-wrapper {
-					width: 100px;
-					height: 100px;
-				}
-				#left-wrapper {
-					width: 100px;
-					height: 100px;
-				}
-			}
-			@media only screen and (max-height: 300px){
-				#container{
-					top:40%;
-				}
-			}
-			@media only screen and (max-height: 500px){
-				#container{
-					top:50%;
-				}
-			}
-	    </style>
+		<LINK href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" type="text/css">
 	</head>
 	<body>
+	<div data-role="page">
 		<img id="mainBackground" src = "{{ url_for('video_feed') }}"></img>
 
 		<div id="container">
@@ -161,16 +24,22 @@
 		  <div class="controller" id="leftStick"></div>
 		</div>
 		</div>
+	</div>
 	<script>
 		var mouseIsDown = false;
 		var nInterval;
 		var hostName = "192.168.0.104"
 		var socketController = new WebSocket("ws://"+hostName+":9001");
-		var currentController;
 		
 		var mouseLocation;
+		
+		window.onresize = function() {
+			$(document.body).width(window.innerWidth).height(window.innerHeight);
+		}
 	
 		$(function(){
+		
+			window.onresize();
 		
 			document.oncontextmenu = function() {return false;};
 
@@ -184,52 +53,53 @@
 
 				return true;
 			});
-			
-			$( '.controller' ).mousedown(function(e){
-			
-				mouseLocation = e;
-				currentController = this;
+			$( document ).on( "vmousedown", ".controller", function(e) {
 				mouseIsDown = true;
-				
-				controllerUsed();
-				nInterval = setInterval(function(){
-					controllerUsed();
-				},50);
-				
-				return false;
-			});
-			$( '.controller' ).mousemove(function(e){
 				mouseLocation = e;
+
+				controllerUsed();
 			});
-			$( 'body' ).mouseup(function(){
+			$( document ).on( "vmousemove", ".controller", function(e) {
 				if(mouseIsDown){
+					mouseLocation = e;
+					controllerUsed();
+				}
+			});
+			$( document ).on( "vmouseup", "body", function(e) {
+				if(mouseIsDown){
+					mouseIsDown = false;
 					controllerReleased();
 				}
-				return false;
 			});
-			
+			$( document ).on( "vmousecancel", "body", function(e) {
+				if(mouseIsDown){
+					mouseIsDown = false;
+					controllerReleased();
+				}
+			});
 		});
 		
-		function controllerUsed(){			
-			var offset = $(currentController).offset();
-			var width = $(currentController).width();
-			var height = $(currentController).height();
-			var x = mouseLocation.pageX - (offset.left+(width/2));
-			var y = mouseLocation.pageY - (offset.top+(height/2));
-			
-			//console.log("Click: " + x/100 + " " + y/100);
-			var controlName = $(currentController).attr('id');
-			//console.log(controlName);
-			
-			var result = controlName+","+x/100+","+y/100;
-			socketController.send(result);
+		function controllerUsed(){	
+			if(mouseLocation.offsetX > 0){
+				var width = $(mouseLocation.target).width();
+				var height = $(mouseLocation.target).height();
+				var x = mouseLocation.offsetX-(width/2);
+				var y = mouseLocation.offsetY-(height/2);
+				
+				//console.log("Click: " + x + " " + y);
+				var controlName = $(mouseLocation.target).attr('id');
+				//console.log(controlName);
+				var xF = Number((x/100).toFixed(3));
+				var yF = Number((y/100).toFixed(3));
+				var result = controlName+","+xF+","+yF;
+				socketController.send(result);
+			}
 		}
 		function controllerReleased(){
 			socketController.send("None"+","+0+","+0);
 			mouseIsDown = false;
 			clearInterval(nInterval);
 		}
-		
 	</script>
 </body>
 </html>

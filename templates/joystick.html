@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+ 	<head>
+  	<meta charset="utf-8"/>
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+  	<script type="application/javascript">
+	
+	$(function() {
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext("2d");
+		var mouseIsDown = false;
+		var touchScreen = false;
+
+		var joystick_center;
+		var joystick_stick;
+		var colours = {
+			center_mouse: "rgb(150,150,150)",
+			stick_mouse: "rgb(50,50,50)",
+			center_touch: "rgb(0,205,240)",
+			stick_touch: "rgb(46,255,255)"
+		}	
+		var imageAspectRatio = getAspectRatio();
+
+		var hostName = "{{ serverIPAddress }}";
+		var socketController = new WebSocket("ws://"+hostName+":9001");
+
+		canvas.addEventListener( 'touchstart', onTouchStart, false );
+		canvas.addEventListener( 'touchmove', onTouchMove, false );
+		canvas.addEventListener( 'touchend', onTouchEnd, false );
+
+		canvas.addEventListener( 'mousedown', onTouchStart, false );
+		canvas.addEventListener( 'mousemove', onTouchMove, false );
+		canvas.addEventListener( 'mouseup', onTouchEnd, false );
+
+		window.addEventListener('resize', resizeCanvas, false);
+		resizeCanvas();
+
+		setInterval(reDraw, 100);
+
+		function resizeCanvas (event) {
+			canvas.width = document.body.clientWidth;
+			canvas.height = document.body.clientHeight;
+		};
+			
+		function onTouchStart(event){
+			event.preventDefault();
+
+			if(event.touches){
+				touchScreen = true;
+				joystick_center = event.touches[0];
+				joystick_stick = event.touches[0];
+			} else {
+				touchScreen = false;
+				joystick_center = event;
+				joystick_stick = event;
+			}
+
+			
+			mouseIsDown = true;
+		}
+		
+		function onTouchMove(event){
+			event.preventDefault();
+
+			if(mouseIsDown){
+				if(touchScreen){
+					var distance = getDistance(event.touches[0]);
+					if(distance.dist <= 100){
+						joystick_stick = event.touches[0];
+						sendToSocket(distance.x,distance.y);
+					}
+				} else {
+					var distance = getDistance(event);
+					if(distance.dist <= 100){
+						joystick_stick = event;
+						sendToSocket(distance.x,distance.y);
+					}
+				}
+				
+			}
+		}
+		
+		function onTouchEnd(event){
+			if(mouseIsDown){
+				mouseIsDown = false;
+			}
+		}
+		
+		function reDraw(){
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			var image = document.getElementById("source");
+			if(mouseIsDown){
+				ctx.strokeStyle = touchScreen ? colours.center_touch : colours.center_mouse;
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.arc(joystick_center.pageX-20,joystick_center.pageY-20,80,0,2*Math.PI);
+				ctx.stroke();
+				
+				ctx.strokeStyle = touchScreen ? colours.stick_touch : colours.stick_mouse;
+				ctx.beginPath();
+				ctx.arc(joystick_stick.pageX-10,joystick_stick.pageY-10,40,0,2*Math.PI);
+				ctx.stroke();
+			}
+		}
+
+		function getAspectRatio(){
+			var image = document.getElementById("source");
+			return image.width/image.height;
+		}
+		
+		function getDistance(event){
+			var difX = Math.abs(joystick_center.pageX-event.pageX);
+			var difY = Math.abs(joystick_center.pageY-event.pageY);
+			
+			var hyp = Math.sqrt(Math.pow(difX, 2)+Math.pow(difY, 2));
+			return {dist: hyp,x:difX,y:difY};
+		}
+
+		function sendToSocket(x,y)
+		{
+			var xF = Number((x/100).toFixed(3));
+			var yF = Number((y/100).toFixed(3));
+			var result = "rightStick"+","+xF+","+yF;
+			socketController.send(result);
+		}
+	});
+	
+  </script>
+  <style type="text/css">
+  		html,body{
+  			padding: 0;
+  			margin: 0;
+  		}
+      canvas { 
+      		position: relative;
+      		margin: 0;
+      		padding: 0;
+      		height: 100vh; 
+		  	width: 100vw; 
+		  	display: block;
+		  	z-index: 99;
+      }
+      #source {
+      	z-index: 1;
+	    max-width:100%;
+		min-height:100%;
+		max-height:100%;
+		
+		position:absolute;
+		
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+      }
+    </style>
+ </head>
+ <body>
+
+   <img id="source" src="{{ url_for('video_feed') }}">
+	<canvas id="canvas" width="500" height="500"></canvas>
+ </body>
+</html>
