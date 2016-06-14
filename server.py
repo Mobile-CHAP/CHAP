@@ -23,11 +23,7 @@ camera = Camera()
 
 @app.route("/")
 def root():
-    return render_template("index.html", title = 'Controller')
-
-@app.route("/joystick")
-def joystick():
-    return render_template("joystick.html",serverIPAddress=serverIP, title = 'Controller')
+    return render_template("index.html", serverIPAddress=serverIP, title = 'Controller')
 
 @app.route('/video_feed')
 def video_feed():
