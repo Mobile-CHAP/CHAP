@@ -7,13 +7,18 @@
   	<script type="application/javascript">
 	
 	$(function() {
+
+		//Create Variables and listeners
 		var canvas = document.getElementById("canvas");
 		var ctx = canvas.getContext("2d");
-		var mouseIsDown = false;
-		var touchScreen = false;
+		var joystickOn = false;
+		var sliderOn = false;
+		var hasTouchScreen = false;
 
 		var joystick_center;
 		var joystick_stick;
+		var slider_main;
+		var slider_tab;
 		var colours = {
 			center_mouse: "rgb(150,150,150)",
 			stick_mouse: "rgb(50,50,50)",
@@ -22,6 +27,7 @@
 		}	
 		var imageAspectRatio = getAspectRatio();
 
+		//Get hostname from Flask
 		var hostName = "{{ serverIPAddress }}";
 		var socketController = new WebSocket("ws://"+hostName+":9001");
 
@@ -33,73 +39,143 @@
 		canvas.addEventListener( 'mousemove', onTouchMove, false );
 		canvas.addEventListener( 'mouseup', onTouchEnd, false );
 
+		//Prepare page
+		document.oncontextmenu = function() {return false;};
 		window.addEventListener('resize', resizeCanvas, false);
 		resizeCanvas();
-
-		setInterval(reDraw, 100);
 
 		function resizeCanvas (event) {
 			canvas.width = document.body.clientWidth;
 			canvas.height = document.body.clientHeight;
+			reDraw();
 		};
 			
 		function onTouchStart(event){
 			event.preventDefault();
 
 			if(event.touches){
-				touchScreen = true;
-				joystick_center = event.touches[0];
-				joystick_stick = event.touches[0];
-			} else {
-				touchScreen = false;
-				joystick_center = event;
-				joystick_stick = event;
+				hasTouchScreen = true;
+
+				for(var touch of event.touches){
+					if(touch.pageX > canvas.width/2){
+						joystick_center = touch;
+						joystick_stick = touch;
+						joystickOn = true;
+					} else {
+						slider_main = touch;
+						slider_tab = touch;
+						sliderOn = true;
+					}
+				}
+			} 
+			else 
+			{
+				if(event.buttons == 1){
+					joystick_center = event;
+					joystick_stick = event;
+					joystickOn = true;
+				} else if (event.buttons == 2){
+					slider_main = event;
+					slider_tab = event;
+					sliderOn = true;
+				}
+				hasTouchScreen = false;
 			}
 
+			reDraw();
+		}
+
+		function sliderUpdate(currentEvent){
+			if(currentEvent.pageY <= slider_main.pageY + 100 &&
+				currentEvent.pageY >= slider_main.pageY - 100){
+				slider_tab = currentEvent;
+
+				sendToSocket("leftSlider",0,(slider_main.pageY-currentEvent.pageY));
+			}
+
+			reDraw();
+		}
+
+		function joystickUpdate(currentEvent){
+			var distance = getDistance(currentEvent);
+
+			if(distance.dist <= 100){
+				joystick_stick = currentEvent;
+
+				sendToSocket("rightJoystick",distance.x,distance.y);
+			}
 			
-			mouseIsDown = true;
+			reDraw();
 		}
 		
 		function onTouchMove(event){
 			event.preventDefault();
 
-			if(mouseIsDown){
-				if(touchScreen){
-					var distance = getDistance(event.touches[0]);
-					if(distance.dist <= 100){
-						joystick_stick = event.touches[0];
-						sendToSocket(distance.x,distance.y);
-					}
+			if(joystickOn && sliderOn){
+				if(hasTouchScreen){
+					for(var touch of event.touches){
+						if(touch.pageX > canvas.width/2){
+							joystickUpdate(touch);
+						} else {
+							sliderUpdate(touch);
+						}
+					} 
+				}
+			} else if(joystickOn){
+				if(hasTouchScreen){
+					joystickUpdate(event.touches[0]);
 				} else {
-					var distance = getDistance(event);
-					if(distance.dist <= 100){
-						joystick_stick = event;
-						sendToSocket(distance.x,distance.y);
-					}
+					joystickUpdate(event);
 				}
 				
+			} else if(sliderOn){
+				if(hasTouchScreen){
+					sliderUpdate(event.touches[0]);
+				} else {
+					sliderUpdate(event);
+				}
 			}
 		}
 		
 		function onTouchEnd(event){
-			if(mouseIsDown){
-				mouseIsDown = false;
+			if(joystickOn){
+				joystickOn = false;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				sendToSocket("rightJoystick",0,0);
+			}
+			if(sliderOn){
+				sliderOn = false;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				sendToSocket("leftSlider",0,0);
 			}
 		}
 		
 		function reDraw(){
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			var image = document.getElementById("source");
-			if(mouseIsDown){
-				ctx.strokeStyle = touchScreen ? colours.center_touch : colours.center_mouse;
+			if(joystickOn){
+				ctx.strokeStyle = hasTouchScreen ? colours.center_touch : colours.center_mouse;
 				ctx.lineWidth = 2;
 				ctx.beginPath();
 				ctx.arc(joystick_center.pageX-20,joystick_center.pageY-20,80,0,2*Math.PI);
 				ctx.stroke();
 				
-				ctx.strokeStyle = touchScreen ? colours.stick_touch : colours.stick_mouse;
+				ctx.strokeStyle = hasTouchScreen ? colours.stick_touch : colours.stick_mouse;
 				ctx.beginPath();
 				ctx.arc(joystick_stick.pageX-10,joystick_stick.pageY-10,40,0,2*Math.PI);
+				ctx.stroke();
+			}
+
+			if(sliderOn){
+				ctx.strokeStyle = hasTouchScreen ? colours.center_touch : colours.center_mouse;
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.rect(slider_main.pageX-25,slider_main.pageY-100,50,200);
+				ctx.stroke();
+				
+				ctx.strokeStyle = hasTouchScreen ? colours.stick_touch : colours.stick_mouse;
+				ctx.beginPath();
+				ctx.rect(slider_main.pageX-40,slider_tab.pageY-10,80,20);
 				ctx.stroke();
 			}
 		}
@@ -110,18 +186,18 @@
 		}
 		
 		function getDistance(event){
-			var difX = Math.abs(joystick_center.pageX-event.pageX);
-			var difY = Math.abs(joystick_center.pageY-event.pageY);
+			var difX = joystick_center.pageX-event.pageX;
+			var difY = joystick_center.pageY-event.pageY;
 			
 			var hyp = Math.sqrt(Math.pow(difX, 2)+Math.pow(difY, 2));
 			return {dist: hyp,x:difX,y:difY};
 		}
 
-		function sendToSocket(x,y)
+		function sendToSocket(controlName,x,y)
 		{
 			var xF = Number((x/100).toFixed(3));
 			var yF = Number((y/100).toFixed(3));
-			var result = "rightStick"+","+xF+","+yF;
+			var result = controlName+","+xF+","+yF;
 			socketController.send(result);
 		}
 	});
