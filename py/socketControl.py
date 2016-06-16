@@ -40,9 +40,9 @@ class ServerRobotController(WebSocketServerProtocol):
             # mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
             # mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
             # mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
-        elif controlID == "leftLeftRight":
+        elif controlID == "leftSliderHorz":
             rotation = 100*Xvalue
-        elif controlID == "leftSlider":    
+        elif controlID == "leftSliderVert":    
             v4 = 200*Yvalue
             #mx28.set_ax_reg(4, SPEED_REG, ([(v4%256),(v4>>8)]))
             

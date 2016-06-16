@@ -18,7 +18,7 @@ if(args.port):
     PORT = args.port
 
 gevent.monkey.patch_all()
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__)
 camera = Camera()
 
 @app.route("/")
