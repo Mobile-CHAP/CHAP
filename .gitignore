@@ -1,4 +1,9 @@
 backup/
 docs/
+
 *.zip
 Thumbs.db
+
+# Sublime text
+.sublime-project
+.sublime-workspace

@@ -5,6 +5,7 @@ function runController(hostName) {
 	var ctx = canvas.getContext("2d");
 	var joystickOn = false;
 	var sliderOn = false;
+	var pinchOn = false;
 	var hasTouchScreen = false;
 	var checkedDirection = false;
 
@@ -17,6 +18,10 @@ function runController(hostName) {
 		main: null,
 		tab: null,
 		isVertical: true
+	};
+	var pinch = {
+		touches: [],
+		distance: 0
 	};
 	var colours = {
 		center_mouse: "rgb(150,150,150)",
@@ -54,12 +59,17 @@ function runController(hostName) {
 
 		if(event.touches){
 			hasTouchScreen = true;
-
 			for(var touch of event.touches){
 				if(touch.pageX > canvas.width/2){
 					joystick.center = touch;
 					joystick.stick = touch;
 					joystickOn = true;
+					
+					pinch.touches.push(touch);
+					if(pinch.touches.length >= 2){
+						joystickOn = false;
+						pinchOn = true;
+					}
 				} else {
 					slider.main = touch;
 					slider.tab = touch;
@@ -110,7 +120,7 @@ function runController(hostName) {
 	}
 
 	function joystickUpdate(currentEvent){
-		var distance = getDistance(currentEvent);
+		var distance = getDistance(joystick.center,currentEvent);
 
 		if(distance.dist <= 100){
 			joystick.stick = currentEvent;
@@ -118,6 +128,14 @@ function runController(hostName) {
 			sendToSocket("rightJoystick",distance.x,distance.y);
 		}
 		
+		reDraw();
+	}
+
+	function pinchUpdate(){
+		if(pinch.touches >= 2){
+			var distance = getDistance(pinch.touches[0],pinch.touches[1]);
+		}
+
 		reDraw();
 	}
 	
@@ -134,6 +152,16 @@ function runController(hostName) {
 					}
 				} 
 			}
+		} else if (pinchOn){
+			pinch.touches = [];
+			for(var touch of event.touches){
+				if(touch.pageX > canvas.width/2){
+					if(pinch.touches.length < 2){
+						pinch.touches.push(touch);
+					}
+				}
+			}
+			pinchUpdate();
 		} else if(joystickOn){
 			if(hasTouchScreen){
 				joystickUpdate(event.touches[0]);
@@ -162,6 +190,11 @@ function runController(hostName) {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			sendToSocket("leftSlider",0,0);
 		}
+		if(pinchOn){
+			pinchOn = false;
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			sendToSocket("rightPinch",0,0);
+		}
 	}
 	
 	function reDraw(){
@@ -178,6 +211,19 @@ function runController(hostName) {
 			ctx.beginPath();
 			ctx.arc(joystick.stick.pageX-10,joystick.stick.pageY-10,40,0,2*Math.PI);
 			ctx.stroke();
+		}
+
+		if(pinchOn){
+			ctx.strokeStyle = hasTouchScreen ? colours.stick_touch : colours.stick_mouse;
+			for(var touch of pinch.touches){
+				ctx.beginPath();
+				ctx.arc(touch.pageX-10,touch.pageY-10,40,0,2*Math.PI);
+				ctx.stroke();
+			}
+				ctx.beginPath();
+				ctx.moveTo(pinch.touches[0].pageX-5,pinch.touches[0].pageY-5);
+				ctx.lineTo(pinch.touches[1].pageX-5,pinch.touches[1].pageY-5);
+				ctx.stroke();
 		}
 
 		if(sliderOn){
@@ -200,6 +246,9 @@ function runController(hostName) {
 			}
 			ctx.stroke();
 		}
+
+		//Reset pinch to ensure it does not cumulate following joystick use.
+		pinch.touches = [];
 	}
 
 	function getSliderDirection(currentEvent){
@@ -216,9 +265,9 @@ function runController(hostName) {
 		}
 	}
 	
-	function getDistance(event){
-		var difX = joystick.center.pageX-event.pageX;
-		var difY = joystick.center.pageY-event.pageY;
+	function getDistance(original,event){
+		var difX = original.pageX-event.pageX;
+		var difY = original.pageY-event.pageY;
 		
 		var hyp = Math.sqrt(Math.pow(difX, 2)+Math.pow(difY, 2));
 		return {dist: hyp,x:difX,y:difY};
