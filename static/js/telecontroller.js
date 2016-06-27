@@ -105,14 +105,14 @@ function runController(hostName) {
 				currentEvent.pageY >= slider.main.pageY - 100){
 				slider.tab = currentEvent;
 
-				sendToSocket("leftSliderVert",0,(slider.main.pageY-currentEvent.pageY));
+				sendToSocket("leftSliderVert",0,(currentEvent.pageY-slider.main.pageY));
 			}
 		} else {
 			if(currentEvent.pageX <= slider.main.pageX + 100 &&
 				currentEvent.pageX >= slider.main.pageX - 100){
 				slider.tab = currentEvent;
 
-				sendToSocket("leftSliderHorz",(slider.main.pageY-currentEvent.pageY),0);
+				sendToSocket("leftSliderHorz",(currentEvent.pageX-slider.main.pageX),0);
 			}
 		}
 
@@ -188,7 +188,11 @@ function runController(hostName) {
 			sliderOn = false;
 			checkedDirection = false;
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			sendToSocket("leftSlider",0,0);
+			if(slider.isVertical){
+				sendToSocket("leftSliderVert",0,0)
+			} else {
+				sendToSocket("rightJoystick",0,0);
+			}
 		}
 		if(pinchOn){
 			pinchOn = false;
@@ -266,7 +270,7 @@ function runController(hostName) {
 	}
 	
 	function getDistance(original,event){
-		var difX = original.pageX-event.pageX;
+		var difX = event.pageX-original.pageX;
 		var difY = original.pageY-event.pageY;
 		
 		var hyp = Math.sqrt(Math.pow(difX, 2)+Math.pow(difY, 2));

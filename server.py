@@ -8,7 +8,7 @@ from gevent.pool import Pool
 
 import argparse
 
-serverIP = socket.gethostbyname(socket.gethostname());
+serverIP = "192.168.15.33"
 PORT = 8080
 parser = argparse.ArgumentParser(description='Select PORT to run server')
 parser.add_argument('port', metavar='P', type=int, nargs='?',
