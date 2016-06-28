@@ -1,28 +1,34 @@
-import Dynamixel as dy
+# Dominic Cassidy 28/06/2016
+# CHAP Control System
 
-mx28 = dy.dynamixel()
-SPEED_REG = 32
-POS_REG = 30
-# #test serial ports
-# print mx28.port.test_ports()
+# Dynamixel comunication system. Listens on websocket for user commands.
 
+##############IMPORTS#################
+import CHAP_Controller.Dynamixel as dy
 from autobahn.twisted.websocket import WebSocketServerProtocol, \
     WebSocketServerFactory
+######################################
 
+# Variables, prepare dynamixel port
+mx28 = dy.dynamixel()
+SPEED_REG = 32 # Location on dynamixel registry for speed controller.
+POS_REG = 30 # Location on dynamixel registry for position controller.
 
+# Web Socket class
 class ServerRobotController(WebSocketServerProtocol):
 
-    #mx28 = dy.dynamixel()
-
+	# React to client connection, setup dynamixels.
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
         for i in range(1,4):
             mx28.set_ax_reg(i, 6, ([(0),(0)]))
             mx28.set_ax_reg(i, 8, ([(0),(0)]))
 
+	# Socket ready for messages
     def onOpen(self):
         print("WebSocket connection open.")
 
+	# Recieve message from client
     def onMessage(self, payload, isBinary):
         message = payload.decode('utf8');
         #print("Text message received: {0}".format(message))
@@ -41,6 +47,7 @@ class ServerRobotController(WebSocketServerProtocol):
             mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
             mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
             mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
+			
         elif controlID == "leftSliderHorz":
             rotation = 0
             #if(xValue < 0):
@@ -51,6 +58,7 @@ class ServerRobotController(WebSocketServerProtocol):
             #mx28.set_ax_reg(1, SPEED_REG, ([(rotation%256),(rotation>>8)]))
             #mx28.set_ax_reg(2, SPEED_REG, ([(rotation%256),(rotation>>8)]))
             #mx28.set_ax_reg(3, SPEED_REG, ([(rotation%256),(rotation>>8)]))
+			
         elif controlID == "leftSliderVert":    
             v4 = 0
             if(Yvalue < 0):
