@@ -1,4 +1,5 @@
 # CHeap Arm Project
+[HomePage](https://mobile-chap.github.io/Web/)
 
 This repository contains the source files for the CHeap Arm Project, including the CAD files and tele-operation software.
 
@@ -26,3 +27,7 @@ To correctly setup python please run the following commands/install the followin
 ```
 pip install gevent flask numpy serial
 ```
+
+
+# Credits
+- USB2Dynamixel communication using [Python library by Phil Williammee](https://github.com/philwilliammee/dynamixel_simple_as_RPI)
