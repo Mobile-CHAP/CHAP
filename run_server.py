@@ -15,7 +15,7 @@ from gevent.pool import Pool
 gevent.monkey.patch_all() # Fix to ensure multiple clients possible.
 
 serverIP = "192.168.15.22" # Used for printing IP, ignore.
-PORT = 8080 # Port to create server on. Will be 80 in future.
+PORT = 80 # Port to create server on. Will be 80 in future.
 
 ##Run Server
 def run_server():
@@ -23,7 +23,7 @@ def run_server():
 	
     pool = Pool(5) # Limit server to 5 clients.
     app.debug = True
-    http_server = WSGIServer(('', PORT), app,spawn=pool) # Create server
+    http_server = WSGIServer(('', PORT), app,spawn=pool,log=None,error_log=None) # Create server
     http_server.serve_forever() # Host server forever
     
 ## Main (i.e. default method)

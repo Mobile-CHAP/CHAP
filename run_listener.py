@@ -37,7 +37,7 @@ class ServerRobotController(WebSocketServerProtocol):
         controlID = val[0]
         Xvalue = float(val[1])
         Yvalue = float(val[2])
-        print("Control => " + controlID + "| Value:"+str(Xvalue)+","+str(Yvalue))
+        #print("Control => " + controlID + "| Value:"+str(Xvalue)+","+str(Yvalue))
         
         if controlID == "rightJoystick":
             mag, ta = dy.polar(Xvalue,Yvalue)
