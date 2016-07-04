@@ -5,9 +5,8 @@ This repository contains the source files for the CHeap Arm Project, including t
 
 # Hardware
 [To-Do List](/design/ToDo.md)
-All hardware related files can be found in the "design" folder. Full schematics are still to come. Latest editable files are all in the FreeCad format and hence FreeCad is required for usage.
 
-[FreeCad](http://www.freecadweb.org/)
+All hardware related files can be found in the "design" folder. Full schematics are still to come. Latest editable files are all in the FreeCad format and hence FreeCad is required for usage: [FreeCad](http://www.freecadweb.org/).
 
 # Software
 
