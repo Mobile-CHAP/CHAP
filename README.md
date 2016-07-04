@@ -28,6 +28,8 @@ To correctly setup python please run the following commands/install the followin
 pip install gevent flask numpy serial
 ```
 
+---
+A Raspberry Pi or similiar is recommended for the project, with [DietPI](http://dietpi.com/) being the preferred Linux distro (due to being mostly empty by default, with an effective setup system and SSH-ready on first boot, i.e. no HDMI or keyboard needed).
 
 # Credits
 - USB2Dynamixel communication using [Python library by Phil Williammee](https://github.com/philwilliammee/dynamixel_simple_as_RPI)
