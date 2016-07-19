@@ -13,8 +13,11 @@
   	</script>
  </head>
  <body>
-
-   <img id="source" src="{{ url_for('video_feed') }}">
+	
+<form action="/" method="post">
+  <input type="submit" value="{{currentCamera}}">
+</form> 
+	<img id="source" src="{{ url_for('video_feed') }}">
 	<canvas id="canvas" width="500" height="500"></canvas>
  </body>
 </html>

@@ -8,7 +8,7 @@
 ##############IMPORTS#################
 from CHAP_Controller import app
 from camera import Camera
-from flask import stream_with_context, render_template, Response
+from flask import stream_with_context, render_template, Response, request
 import gevent.monkey
 ######################################
 
@@ -17,30 +17,52 @@ camera = Camera()
 
 # IP address, passed to client for web socket usage (control listener.)
 serverIP = "192.168.15.22"
+serverIP = "0.0.0.0"
+
+currentCamera = "left"
 
 # Show index.html, pass IP address to client.
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def root():
-    return render_template("index.html", serverIPAddress=serverIP, title = 'Controller')
+
+    global currentCamera
+
+    try:
+        if request.method == 'POST':
+            print "Post"
+            
+            if currentCamera == "left":
+                currentCamera = "right"
+            elif currentCamera == "right":
+                currentCamera = "left"
+
+            print currentCamera
+
+    except Exception as e:
+        print "Failed to get method"
+        return render_template("index.html", serverIPAddress=serverIP,currentCamera=currentCamera, title = 'Controller')
+        
+    return render_template("index.html", serverIPAddress=serverIP,currentCamera=currentCamera, title = 'Controller')
+    
 
 # Capture camera frames when route activated (returns image source).
 @app.route('/video_feed')
 def video_feed():
     def run_camera():
         while True:
-		
-			# Frame rate
+        
+            # Frame rate
             # Give server enough time to listen for other requests.
             # gevent.sleep(0.017) # 60fps
             # gevent.sleep(0.02) # 50fps
             gevent.sleep(0.033) # 30fps
             # gevent.sleep(0.042)  # 24fps
-			
-            frame = camera.get_frame() # Capture frame
-			
-			# Return JPEG bytes
+            
+            frame = camera.get_frame(currentCamera) # Capture frame
+            
+            # Return JPEG bytes
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-	
-	# Return JPEG stream to client video feed.
+    
+    # Return JPEG stream to client video feed.
     return Response(stream_with_context(run_camera()), mimetype='multipart/x-mixed-replace; boundary=frame')

@@ -11,6 +11,14 @@ canvas {
 	display: block;
 	z-index: 99;
 }
+input{
+	z-index: 200;
+	height: 10vh; 
+	width: 10vw; 
+	position:absolute;
+	left:0;
+	top:0;
+}
 #source {
 	z-index: 1;
 	max-width:100%;
