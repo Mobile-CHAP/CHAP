@@ -15,11 +15,12 @@ class Camera(object):
             c.release()
 
     def get_frame(self,camera="left"):
-    
+        suc1, frame1 = self.cap[1].read()
+        suc, frame = self.cap[0].read()
+        
         if camera == "right":
-            suc, frame = self.cap[1].read()
+            ret, jpeg = cv2.imencode(".jpg",frame1)
         else:
-            suc, frame = self.cap[0].read()
+            ret, jpeg = cv2.imencode(".jpg",frame)
             
-        ret, jpeg = cv2.imencode(".jpg",frame)
         return jpeg.tobytes()
