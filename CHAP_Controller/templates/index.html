@@ -7,17 +7,28 @@
 	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   	<script src="{{ url_for('static', filename='js/telecontroller.js') }}"></script>
   	<script type="text/javascript">
+		function switchCamera(newCamera){
+			if(newCamera == '1'){
+				document.getElementById("source").src = "{{ url_for('video_feed',cameraChoice=1) }}";
+			} else{
+				document.getElementById("source").src = "{{ url_for('video_feed',cameraChoice=0) }}";
+			}
+		}
+	
   		$(function() {
   			runController("{{ serverIPAddress }}");
   		});
   	</script>
  </head>
  <body>
-	
-<form action="/" method="post">
-  <input type="submit" value="{{currentCamera}}">
-</form> 
-	<img id="source" src="{{ url_for('video_feed') }}">
+	<button onclick="switchCamera('0')">Camera 0</button>
+	<button onclick="switchCamera('1')">Camera 1</button>
+	<img id="source" src="{{ url_for('video_feed',cameraChoice=0) }}">
 	<canvas id="canvas" width="500" height="500"></canvas>
  </body>
+ 
+ <script>
+
+	
+ </script>
 </html>

@@ -11,13 +11,12 @@ canvas {
 	display: block;
 	z-index: 99;
 }
-input{
+button{
 	z-index: 200;
 	height: 10vh; 
 	width: 10vw; 
-	position:absolute;
-	left:0;
-	top:0;
+	position:relative;
+	float: left;
 }
 #source {
 	z-index: 1;

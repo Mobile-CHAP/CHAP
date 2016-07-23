@@ -16,7 +16,7 @@ gevent.monkey.patch_all() # Fix to ensure multiple clients possible.
 
 serverIP = "192.168.15.22" # Used for printing IP, ignore.
 serverIP = "0.0.0.0" # Used for printing IP, ignore.
-PORT = 80 # Port to create server on. Will be 80 in future.
+PORT = 8080 # Port to create server on. Will be 80 in future.
 
 ##Run Server
 def run_server():

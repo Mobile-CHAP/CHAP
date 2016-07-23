@@ -18,36 +18,15 @@ camera = Camera()
 # IP address, passed to client for web socket usage (control listener.)
 serverIP = "192.168.15.22"
 serverIP = "0.0.0.0"
-
-currentCamera = "left"
-
 # Show index.html, pass IP address to client.
 @app.route("/", methods=['GET', 'POST'])
 def root():
-
-    global currentCamera
-
-    try:
-        if request.method == 'POST':
-            print "Post"
-            
-            if currentCamera == "left":
-                currentCamera = "right"
-            elif currentCamera == "right":
-                currentCamera = "left"
-
-            print currentCamera
-
-    except Exception as e:
-        print "Failed to get method"
-        return render_template("index.html", serverIPAddress=serverIP,currentCamera=currentCamera, title = 'Controller')
-        
-    return render_template("index.html", serverIPAddress=serverIP,currentCamera=currentCamera, title = 'Controller')
+    return render_template("index.html", serverIPAddress=serverIP, title = 'Controller')
     
 
 # Capture camera frames when route activated (returns image source).
-@app.route('/video_feed')
-def video_feed():
+@app.route('/video_feed/<cameraChoice>/')
+def video_feed(cameraChoice):
     def run_camera():
         while True:
         
@@ -58,7 +37,7 @@ def video_feed():
             gevent.sleep(0.033) # 30fps
             # gevent.sleep(0.042)  # 24fps
             
-            frame = camera.get_frame(currentCamera) # Capture frame
+            frame = camera.get_frame(cameraChoice) # Capture frame
             
             # Return JPEG bytes
             yield (b'--frame\r\n'
