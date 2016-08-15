@@ -133,7 +133,8 @@ function runController(hostName) {
 
 	function pinchUpdate(){
 		if(pinch.touches >= 2){
-			var distance = getDistance(pinch.touches[0],pinch.touches[1]);
+			pinch.distance = getDistance(pinch.touches[0],pinch.touches[1]);
+			sendToSocket("rightPinch",pinch.distance,0);
 		}
 
 		reDraw();
@@ -181,6 +182,7 @@ function runController(hostName) {
 	function onTouchEnd(event){
 		if(joystickOn){
 			joystickOn = false;
+			pinch.touches = [];
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			sendToSocket("rightJoystick",0,0);
 		}
@@ -196,6 +198,7 @@ function runController(hostName) {
 		}
 		if(pinchOn){
 			pinchOn = false;
+			pinch.touches = [];
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			sendToSocket("rightPinch",0,0);
 		}
@@ -208,26 +211,28 @@ function runController(hostName) {
 			ctx.strokeStyle = hasTouchScreen ? colours.center_touch : colours.center_mouse;
 			ctx.lineWidth = 2;
 			ctx.beginPath();
-			ctx.arc(joystick.center.pageX-20,joystick.center.pageY-20,80,0,2*Math.PI);
+			ctx.arc(joystick.center.pageX-20,joystick.center.pageY-40,80,0,2*Math.PI);
 			ctx.stroke();
 			
 			ctx.strokeStyle = hasTouchScreen ? colours.stick_touch : colours.stick_mouse;
 			ctx.beginPath();
-			ctx.arc(joystick.stick.pageX-10,joystick.stick.pageY-10,40,0,2*Math.PI);
+			ctx.arc(joystick.stick.pageX-10,joystick.stick.pageY-40,40,0,2*Math.PI);
 			ctx.stroke();
 		}
 
 		if(pinchOn){
 			ctx.strokeStyle = hasTouchScreen ? colours.stick_touch : colours.stick_mouse;
+			
+			ctx.beginPath();
+			ctx.moveTo(pinch.touches[0].pageX-5,pinch.touches[0].pageY-40);
+			ctx.lineTo(pinch.touches[1].pageX-5,pinch.touches[1].pageY-40);
+			ctx.stroke();
+			
 			for(var touch of pinch.touches){
 				ctx.beginPath();
-				ctx.arc(touch.pageX-10,touch.pageY-10,40,0,2*Math.PI);
+				ctx.arc(touch.pageX-10,touch.pageY-40,40,0,2*Math.PI);
 				ctx.stroke();
 			}
-				ctx.beginPath();
-				ctx.moveTo(pinch.touches[0].pageX-5,pinch.touches[0].pageY-5);
-				ctx.lineTo(pinch.touches[1].pageX-5,pinch.touches[1].pageY-5);
-				ctx.stroke();
 		}
 
 		if(sliderOn){
@@ -235,7 +240,7 @@ function runController(hostName) {
 			ctx.lineWidth = 2;
 			ctx.beginPath();
 			if(slider.isVertical){
-				ctx.rect(slider.main.pageX-25,slider.main.pageY-100,50,200);
+				ctx.rect(slider.main.pageX-25,slider.main.pageY-120,50,200);
 			} else {
 				ctx.rect(slider.main.pageX-100,slider.main.pageY-25,200,50);
 			}
@@ -244,7 +249,7 @@ function runController(hostName) {
 			ctx.strokeStyle = hasTouchScreen ? colours.stick_touch : colours.stick_mouse;
 			ctx.beginPath();
 			if(slider.isVertical){
-				ctx.rect(slider.main.pageX-40,slider.tab.pageY-10,80,20);
+				ctx.rect(slider.main.pageX-40,slider.tab.pageY-30,80,20);
 			} else {
 				ctx.rect(slider.tab.pageX-10,slider.main.pageY-40,20,80);
 			}
@@ -252,7 +257,7 @@ function runController(hostName) {
 		}
 
 		//Reset pinch to ensure it does not cumulate following joystick use.
-		pinch.touches = [];
+		
 	}
 
 	function getSliderDirection(currentEvent){

@@ -10,19 +10,56 @@ from autobahn.twisted.websocket import WebSocketServerProtocol, \
 ######################################
 
 # Variables, prepare dynamixel port
-mx28 = dy.dynamixel()
-SPEED_REG = 32 # Location on dynamixel registry for speed controller.
-POS_REG = 30 # Location on dynamixel registry for position controller.
+base = dy.dynamixel()
+hand = dy.dynamixel()
+
+# Locations on dynamixel registry
+REG_GOAL_POSITION_L = 30
+REG_GOAL_POSITION_H = 31
+REG_SPEED = 32
+REG_TORQUE_LIMIT = 34
+REG_CURRENT_POSITION = 36
+
+WHEEL_MODE = ([(0),(0)])
+JOINT_MODE = ([(1),(1)])
+KNUCKLE_SPACE = None
+
+HAND_WRIST = 10
+HAND_KNUCKLE = 11
+HAND_FINGER = 12
+
+#Wheel mode: CW/CCW = 0
+#Joint mode: CW/CCW = !0
+#Multi-turn mode: CW/CCW = 4095
 
 # Web Socket class
 class ServerRobotController(WebSocketServerProtocol):
 
+    def prepareKnuckle(self):
+        global KNUCKLE_SPACE
+    
+        torque = get_reg(HAND_KNUCKLE, ins=2, regstart=REG_TORQUE_LIMIT, rlength=1)
+        SPEED = 200
+        
+        while(torque < 400):
+            hand.set_ax_reg(HAND_KNUCKLE, REG_SPEED, ([(SPEED%256),(SPEED>>8)]))
+            
+        SPEED = 0
+        hand.set_ax_reg(HAND_KNUCKLE, REG_SPEED, ([(SPEED%256),(SPEED>>8)]))
+        
+        max_position = get_reg(ID, ins=2, regstart=REG_CURRENT_POSITION, rlength=1)
+        min_position = abs(max_position-2000)
+        
+        KNUCKLE_SPACE = [min_position,max_position]
+        
+    def moveKnuckle(self,targetPosition):
+        global KNUCKLE_SPACE
+        #Put target within range of knuckle space
+        #wait until target reached
+
 	# React to client connection, setup dynamixels.
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
-        for i in range(1,4):
-            mx28.set_ax_reg(i, 6, ([(0),(0)]))
-            mx28.set_ax_reg(i, 8, ([(0),(0)]))
 
 	# Socket ready for messages
     def onOpen(self):
@@ -44,20 +81,20 @@ class ServerRobotController(WebSocketServerProtocol):
             v1, v2, v3 = dy.velocity(mag,ta)
             v1, v2, v3 = dy.vel_direc(v1), dy.vel_direc(v2), dy.vel_direc(v3)
             #vt = 2
-            mx28.set_ax_reg(1, SPEED_REG, ([(v1%256),(v1>>8)]))
-            mx28.set_ax_reg(2, SPEED_REG, ([(v2%256),(v2>>8)]))
-            mx28.set_ax_reg(3, SPEED_REG, ([(v3%256),(v3>>8)]))
+            base.set_ax_reg(1, REG_SPEED, ([(v1%256),(v1>>8)]))
+            base.set_ax_reg(2, REG_SPEED, ([(v2%256),(v2>>8)]))
+            base.set_ax_reg(3, REG_SPEED, ([(v3%256),(v3>>8)]))
 			
         elif controlID == "leftSliderHorz":
             rotation = 0
-            #if(xValue < 0):
-            #    rotation = int(1024 - Xvalue)
-            #else:
-            #    rotation = int(1024*Xvalue)
+            if(xValue < 0):
+                rotation = int(1024 - Xvalue)
+            else:
+                rotation = int(1024*Xvalue)
                 
-            #mx28.set_ax_reg(1, SPEED_REG, ([(rotation%256),(rotation>>8)]))
-            #mx28.set_ax_reg(2, SPEED_REG, ([(rotation%256),(rotation>>8)]))
-            #mx28.set_ax_reg(3, SPEED_REG, ([(rotation%256),(rotation>>8)]))
+            #base.set_ax_reg(1, SPEED_REG, ([(rotation%256),(rotation>>8)]))
+            #base.set_ax_reg(2, SPEED_REG, ([(rotation%256),(rotation>>8)]))
+            #base.set_ax_reg(3, SPEED_REG, ([(rotation%256),(rotation>>8)]))
 			
         elif controlID == "leftSliderVert":    
             v4 = 0
@@ -67,11 +104,37 @@ class ServerRobotController(WebSocketServerProtocol):
             else:
                 v4 = int(1023*Yvalue)
                 #v4 = 1000
-            mx28.set_ax_reg(4, SPEED_REG, ([(v4%256),(v4>>8)]))
+            base.set_ax_reg(4, REG_SPEED, ([(v4%256),(v4>>8)]))
+            
+        elif controlID == "rightPinch":    
+            Xvalue
+            base.set_ax_reg(HAND_KNUCKLE, REG_SPEED, ([(v4%256),(v4>>8)]))
             
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
-
+        
+    def __init__(self):
+        super.__init__
+    
+        for i in range(1,4):
+            base.set_ax_reg(i, REG_GOAL_POSITION_L, WHEEL_MODE)
+            base.set_ax_reg(i, REG_GOAL_POSITION_H, WHEEL_MODE)
+            
+        #Set Wrist to Joint mode
+        hand.set_ax_reg(HAND_WRIST, REG_GOAL_POSITION_L, JOINT_MODE)
+        hand.set_ax_reg(HAND_WRIST, REG_GOAL_POSITION_H, JOINT_MODE)
+        hand.set_ax_reg(HAND_WRIST, REG_SPEED, ([(300%256),(300>>8)]))
+        
+        #Set Knuckle to Wheel mode
+        hand.set_ax_reg(HAND_KNUCKLE, REG_GOAL_POSITION_L, WHEEL_MODE)
+        hand.set_ax_reg(HAND_KNUCKLE, REG_GOAL_POSITION_H, WHEEL_MODE)
+        
+        #Set Finger to Joint mode
+        hand.set_ax_reg(HAND_FINGER, REG_GOAL_POSITION_L, ([(228),(950)]))
+        hand.set_ax_reg(HAND_FINGER, REG_GOAL_POSITION_H, ([(228),(950)]))
+        hand.set_ax_reg(HAND_FINGER, REG_SPEED, ([(150%256),(150>>8)]))
+        
+        prepareKnuckle()
 
 if __name__ == '__main__':
 

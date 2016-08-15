@@ -8,7 +8,11 @@
   	<script src="{{ url_for('static', filename='js/telecontroller.js') }}"></script>
   	<script type="text/javascript">
 		function switchCamera(newCamera){
-			if(newCamera == '1'){
+			console.log(newCamera)
+			if(newCamera == '2'){
+				document.getElementById("source").src = "{{ url_for('video_feed',cameraChoice=2) }}";
+			}
+			else if(newCamera == '1'){
 				document.getElementById("source").src = "{{ url_for('video_feed',cameraChoice=1) }}";
 			} else{
 				document.getElementById("source").src = "{{ url_for('video_feed',cameraChoice=0) }}";
@@ -22,7 +26,8 @@
  </head>
  <body>
 	<button onclick="switchCamera('0')">Camera 0</button>
-	<button onclick="switchCamera('1')">Camera 1</button>
+	<button onclick="switchCamera('2')">Camera 1</button>
+	<button onclick="switchCamera('1')">Camera 2</button>
 	<img id="source" src="{{ url_for('video_feed',cameraChoice=0) }}">
 	<canvas id="canvas" width="500" height="500"></canvas>
  </body>

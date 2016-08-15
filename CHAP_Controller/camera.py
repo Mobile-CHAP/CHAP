@@ -3,7 +3,7 @@ import numpy as np
 
 class Camera(object):
     def __init__(self):
-        self.cap = (cv2.VideoCapture(0),cv2.VideoCapture(1))
+        self.cap = (cv2.VideoCapture(0),cv2.VideoCapture(1),cv2.VideoCapture(2))
         
         for c in self.cap:
             c.set(3,720)

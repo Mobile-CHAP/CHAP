@@ -16,8 +16,8 @@ import gevent.monkey
 camera = Camera()
 
 # IP address, passed to client for web socket usage (control listener.)
-serverIP = "192.168.15.22"
-serverIP = "0.0.0.0"
+serverIP = "192.168.15.18"
+#serverIP = "0.0.0.0"
 # Show index.html, pass IP address to client.
 @app.route("/", methods=['GET', 'POST'])
 def root():
@@ -27,6 +27,7 @@ def root():
 # Capture camera frames when route activated (returns image source).
 @app.route('/video_feed/<cameraChoice>/')
 def video_feed(cameraChoice):
+    print ("SERVER-> Using Camera",cameraChoice)
     def run_camera():
         while True:
         
@@ -36,7 +37,6 @@ def video_feed(cameraChoice):
             # gevent.sleep(0.02) # 50fps
             gevent.sleep(0.033) # 30fps
             # gevent.sleep(0.042)  # 24fps
-            
             frame = camera.get_frame(cameraChoice) # Capture frame
             
             # Return JPEG bytes
