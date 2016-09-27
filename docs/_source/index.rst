@@ -11,7 +11,7 @@
    :inherited-members:
    :undoc-members:
 
-.. include:: README.rst
+.. include:: ../../README.rst
 
 
 Indices and tables
