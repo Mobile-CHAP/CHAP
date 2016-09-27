@@ -1,0 +1,13 @@
+devMode: true #Switch IP addresses and disable websocket and dynamixel connections - for use during local testing without CHAP.
+dynamixel:
+    wheels: [1,2,3]
+    base: 4
+    gripper:
+        wrist: 10
+        knuckle: 11
+        finger: 12
+release:
+    serverIP: '192.168.42.1' #IP address of CHAP robot (won't change if using CHAP ad-hoc network).
+    log: '/root/CHAP-Bot/chap.log'
+dev:
+    serverIP: '127.0.0.1' #IP address used during testing on local machine.
