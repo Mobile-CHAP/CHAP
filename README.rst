@@ -2,7 +2,7 @@ CHeap Arm Project - Teleoperation Control Software
 ==================================================
 `HomePage <https://github.com/Mobile-CHAP>`_
 
-This repository contains the source files for the CHeap Arm Project, including the CAD files and tele-operation software.
+This repository contains the source files for the CHeap Arm Project control software.
 
 Installation
 ==================
@@ -75,3 +75,9 @@ The file 'settings.yml contains the following options:
 		serverIP: '127.0.0.1' #For testing on local machine.
 
 These can be adjusted based on whether or not development and testing is being done on a local machine while the control listener is not running (such as for HTML/JS development), or over an internet connection with fully CHAP systems in use.
+
+Changes
+=======
+
+Changes to camera feed such as additional preprocessing or frame usage can be made in CHAP/CHAP_Controller/camera.py.
+Client side JavaScript is managed in CHAP/CHAP_Controller/static/js/telecontroller.js
