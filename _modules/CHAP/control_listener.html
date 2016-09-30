@@ -1,0 +1,338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CHAP.control_listener &#8212; CHAP Control Software 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="CHAP Control Software 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for CHAP.control_listener</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Dominic Cassidy 28/06/2016</span>
+<span class="c1"># CHAP Control System</span>
+
+<span class="c1"># Dynamixel comunication system. Listens on websocket for user commands.</span>
+
+<span class="c1">##############IMPORTS#################</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">pypot.dynamixel</span>
+<span class="k">if</span> <span class="s2">&quot;ARM&quot;</span> <span class="ow">in</span> <span class="n">platform</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">4</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">RPi.GPIO</span> <span class="k">as</span> <span class="nn">GPIO</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">GPIO</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="kn">import</span> <span class="nn">CHAP_Controller.Dynamixel</span> <span class="k">as</span> <span class="nn">dy</span>
+<span class="kn">from</span> <span class="nn">autobahn.twisted.websocket</span> <span class="k">import</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span> \
+    <span class="n">WebSocketServerFactory</span>
+<span class="c1">######################################</span>
+
+<span class="n">settingsPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span> 
+<span class="n">settings</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">settingsPath</span> <span class="o">+</span> <span class="s2">&quot;\settings.yml&quot;</span><span class="p">))</span>
+
+<span class="c1"># Base Variables</span>
+<span class="n">wheels_one</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;dynamixel&#39;</span><span class="p">][</span><span class="s1">&#39;wheels&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">wheels_two</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;dynamixel&#39;</span><span class="p">][</span><span class="s1">&#39;wheels&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">wheels_three</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;dynamixel&#39;</span><span class="p">][</span><span class="s1">&#39;wheels&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">base_tower</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;dynamixel&#39;</span><span class="p">][</span><span class="s1">&#39;base&#39;</span><span class="p">]</span>
+
+<span class="c1"># Gripper Variables</span>
+<span class="n">gripper_wrist</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;dynamixel&#39;</span><span class="p">][</span><span class="s1">&#39;gripper&#39;</span><span class="p">][</span><span class="s1">&#39;wrist&#39;</span><span class="p">]</span>
+<span class="n">gripper_knuckle</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;dynamixel&#39;</span><span class="p">][</span><span class="s1">&#39;gripper&#39;</span><span class="p">][</span><span class="s1">&#39;knuckle&#39;</span><span class="p">]</span>
+<span class="n">gripper_finger</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;dynamixel&#39;</span><span class="p">][</span><span class="s1">&#39;gripper&#39;</span><span class="p">][</span><span class="s1">&#39;finger&#39;</span><span class="p">]</span>
+
+<span class="n">gripper_wrist_min</span> <span class="o">=</span> <span class="o">-</span><span class="mi">160</span>
+<span class="n">gripper_wrist_max</span> <span class="o">=</span> <span class="mi">90</span>
+
+<span class="n">gripper_finger_min</span> <span class="o">=</span> <span class="o">-</span><span class="mi">120</span>
+<span class="n">gripper_finger_max</span> <span class="o">=</span> <span class="mi">160</span>
+
+<span class="c1">#Dynamixel Setup</span>
+<span class="n">baseIDs</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_tower</span><span class="p">,</span><span class="n">wheels_one</span><span class="p">,</span><span class="n">wheels_two</span><span class="p">,</span><span class="n">wheels_three</span><span class="p">)</span>
+<span class="n">gripperIDs</span> <span class="o">=</span> <span class="p">(</span><span class="n">gripper_wrist</span><span class="p">,</span><span class="n">gripper_knuckle</span><span class="p">,</span><span class="n">gripper_finger</span><span class="p">)</span>
+
+<span class="c1">#Connect to Dynamixels</span>
+<span class="n">gripper_port</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">base_port</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">base_wheel_mode</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_tower</span><span class="p">,</span><span class="n">wheels_one</span><span class="p">,</span><span class="n">wheels_two</span><span class="p">,</span><span class="n">wheels_three</span><span class="p">)</span>
+<span class="n">hand_joint_mode</span> <span class="o">=</span> <span class="p">(</span><span class="n">gripper_wrist</span><span class="p">,</span><span class="n">gripper_finger</span><span class="p">)</span>
+<span class="n">hand_wheel_mode</span> <span class="o">=</span> <span class="p">(</span><span class="n">gripper_knuckle</span><span class="p">,)</span>
+
+<span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;devMode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+    <span class="k">while</span> <span class="n">gripper_port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">gripper_port</span> <span class="o">=</span> <span class="n">pypot</span><span class="o">.</span><span class="n">dynamixel</span><span class="o">.</span><span class="n">find_port</span><span class="p">(</span><span class="n">gripperIDs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;Failed to connect to gripper dynamixel, retrying...&quot;</span>
+            
+    <span class="k">while</span> <span class="n">base_port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">base_port</span> <span class="o">=</span> <span class="n">pypot</span><span class="o">.</span><span class="n">dynamixel</span><span class="o">.</span><span class="n">find_port</span><span class="p">(</span><span class="n">baseIDs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;Failed to connect to base dynamixel, retrying...&quot;</span>
+
+    <span class="c1">#Prepare Base</span>
+    <span class="n">base_io</span> <span class="o">=</span> <span class="n">pypot</span><span class="o">.</span><span class="n">dynamixel</span><span class="o">.</span><span class="n">DxlIO</span><span class="p">(</span><span class="n">base_port</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">base_io</span><span class="o">.</span><span class="n">enable_torque</span><span class="p">(</span><span class="n">base_wheel_mode</span><span class="p">)</span>
+    <span class="n">base_io</span><span class="o">.</span><span class="n">set_wheel_mode</span><span class="p">(</span><span class="n">base_wheel_mode</span><span class="p">)</span>
+        
+    <span class="c1">#Prepare Gripper</span>
+    <span class="n">hand_io</span> <span class="o">=</span> <span class="n">pypot</span><span class="o">.</span><span class="n">dynamixel</span><span class="o">.</span><span class="n">DxlIO</span><span class="p">(</span><span class="n">gripper_port</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_joint_mode</span><span class="p">(</span><span class="n">hand_joint_mode</span><span class="p">)</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_wheel_mode</span><span class="p">(</span><span class="n">hand_wheel_mode</span><span class="p">)</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">enable_torque</span><span class="p">(</span><span class="n">hand_wheel_mode</span><span class="p">)</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_max_torque</span><span class="p">({</span><span class="n">gripper_knuckle</span><span class="p">:</span><span class="mi">400</span><span class="p">})</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_torque_limit</span><span class="p">({</span><span class="n">gripper_knuckle</span><span class="p">:</span><span class="mi">400</span><span class="p">})</span>
+
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">gripper_wrist</span><span class="p">:</span><span class="mi">200</span><span class="p">})</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">gripper_finger</span><span class="p">:</span><span class="mi">200</span><span class="p">})</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_angle_limit</span><span class="p">({</span><span class="n">gripper_wrist</span><span class="p">:(</span><span class="n">gripper_wrist_min</span><span class="p">,</span><span class="n">gripper_wrist_max</span><span class="p">)})</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_angle_limit</span><span class="p">({</span><span class="n">gripper_finger</span><span class="p">:(</span><span class="n">gripper_finger_min</span><span class="p">,</span><span class="n">gripper_finger_max</span><span class="p">)})</span>
+
+    <span class="c1">#Reset Positions</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_goal_position</span><span class="p">({</span><span class="n">gripper_wrist</span><span class="p">:</span><span class="n">gripper_wrist_min</span><span class="p">})</span>
+    <span class="n">hand_io</span><span class="o">.</span><span class="n">set_goal_position</span><span class="p">({</span><span class="n">gripper_finger</span><span class="p">:</span><span class="n">gripper_finger_min</span><span class="p">})</span>
+
+<div class="viewcode-block" id="IOBumper"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.IOBumper">[docs]</a><span class="k">class</span> <span class="nc">IOBumper</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ioPin</span><span class="p">,</span><span class="n">powerPin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup Bumper GPIO pins.</span>
+<span class="sd">        BCM number is expected (i.e. ID, not position on board).</span>
+
+<span class="sd">        @type  ioPin: number</span>
+<span class="sd">        @param ioPin: Input/Ouput pin on Rasperry Pi used.</span>
+<span class="sd">        </span>
+<span class="sd">        @type  powerPin: number</span>
+<span class="sd">        @param powerPin: Pin used to supply power to gate. Any GPIO capable of 3.3V (all standard GPIO on Pi). </span>
+<span class="sd">        </span>
+<span class="sd">        @rtype:   IOBumper</span>
+<span class="sd">        @return:  IOBumper object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ioPin</span> <span class="o">=</span> <span class="n">ioPin</span>
+    
+        <span class="n">GPIO</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">ioPin</span><span class="p">,</span><span class="n">GPIO</span><span class="o">.</span><span class="n">IN</span><span class="p">)</span>
+        <span class="n">GPIO</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">powerPin</span><span class="p">,</span><span class="n">GPIO</span><span class="o">.</span><span class="n">OUT</span><span class="p">)</span>
+        
+        <span class="n">GPIO</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">powerPin</span><span class="p">,</span><span class="n">GPIO</span><span class="o">.</span><span class="n">HIGH</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="IOBumper.read"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.IOBumper.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return current value of GPIO pin. This corresponds to gate positions.</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype:   number</span>
+<span class="sd">        @return:  0 = open. 1 = closed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">GPIO</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ioPin</span><span class="p">)</span></div></div>
+
+<span class="k">if</span> <span class="n">GPIO</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">GPIO</span><span class="o">.</span><span class="n">setmode</span><span class="p">(</span><span class="n">GPIO</span><span class="o">.</span><span class="n">BCM</span><span class="p">)</span>
+    <span class="n">topBumper</span> <span class="o">=</span> <span class="n">IOBumper</span><span class="p">(</span><span class="n">ioPin</span><span class="o">=</span><span class="mi">27</span><span class="p">,</span><span class="n">powerPin</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">botBumper</span> <span class="o">=</span> <span class="n">IOBumper</span><span class="p">(</span><span class="n">ioPin</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span><span class="n">powerPin</span><span class="o">=</span><span class="mi">26</span><span class="p">)</span>
+    
+    <span class="nb">print</span> <span class="s2">&quot;GPIO only usable on Raspberry Pi&quot;</span>
+
+<span class="c1"># Web Socket class</span>
+<div class="viewcode-block" id="ServerRobotController"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.ServerRobotController">[docs]</a><span class="k">class</span> <span class="nc">ServerRobotController</span><span class="p">(</span><span class="n">WebSocketServerProtocol</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ServerRobotController.onConnect"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.ServerRobotController.onConnect">[docs]</a>    <span class="k">def</span> <span class="nf">onConnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        React to client connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Client connecting: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">peer</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ServerRobotController.onOpen"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.ServerRobotController.onOpen">[docs]</a>    <span class="k">def</span> <span class="nf">onOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Socket ready to recieve messages. The client waits until this point before sending messages.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WebSocket connection open.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServerRobotController.onMessage"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.ServerRobotController.onMessage">[docs]</a>    <span class="k">def</span> <span class="nf">onMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">isBinary</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recieve message from client</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">);</span>
+        
+        <span class="k">if</span> <span class="s2">&quot;[ERROR]//&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="n">message</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="s2">&quot;[BODY]&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">controlID</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">Xvalue</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">Yvalue</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[CONTROL]//&quot;</span><span class="o">+</span> <span class="n">controlID</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">Xvalue</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">Yvalue</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="n">controlID</span> <span class="o">==</span> <span class="s2">&quot;[BODY]rightJoystick&quot;</span><span class="p">:</span>
+                <span class="n">mag</span><span class="p">,</span> <span class="n">ta</span> <span class="o">=</span> <span class="n">dy</span><span class="o">.</span><span class="n">polar</span><span class="p">(</span><span class="n">Xvalue</span><span class="p">,</span><span class="n">Yvalue</span><span class="p">)</span>
+                <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span> <span class="o">=</span> <span class="n">dy</span><span class="o">.</span><span class="n">velocity</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span><span class="n">ta</span><span class="p">)</span>
+                
+                <span class="c1">#print &quot;[VELOCITY]// 1:%s 2:%s 3:%s&quot; % (v1,v2,v3)</span>
+
+                <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_one</span><span class="p">:</span><span class="n">v1</span><span class="p">})</span>
+                <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_two</span><span class="p">:</span><span class="n">v2</span><span class="p">})</span>
+                <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_three</span><span class="p">:</span><span class="n">v3</span><span class="p">})</span>
+                
+            <span class="k">elif</span> <span class="n">controlID</span> <span class="o">==</span> <span class="s2">&quot;[BODY]leftSliderHorz&quot;</span><span class="p">:</span>
+                <span class="n">rotation</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">Xvalue</span>
+                <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_one</span><span class="p">:</span><span class="n">rotation</span><span class="p">})</span>
+                <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_two</span><span class="p">:</span><span class="n">rotation</span><span class="p">})</span>
+                <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_three</span><span class="p">:</span><span class="n">rotation</span><span class="p">})</span>
+                
+            <span class="k">elif</span> <span class="n">controlID</span> <span class="o">==</span> <span class="s2">&quot;[BODY]leftSliderVert&quot;</span><span class="p">:</span>    
+                <span class="c1">#Up/Down</span>
+                <span class="n">v4</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">Yvalue</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="c1">#Going up</span>
+                    <span class="k">if</span> <span class="n">topBumper</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">v4</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">Yvalue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span> <span class="s2">&quot;Reached top&quot;</span>
+                <span class="k">else</span><span class="p">:</span> <span class="c1">#Going down</span>
+                    <span class="k">if</span> <span class="n">botBumper</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">v4</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">Yvalue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span> <span class="s2">&quot;Reached bottom&quot;</span>
+                
+                <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">base_tower</span><span class="p">:</span><span class="n">v4</span><span class="p">})</span>
+        
+        <span class="k">if</span> <span class="s2">&quot;[HAND]&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">controlID</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">Yvalue</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[CONTROL]//&quot;</span><span class="o">+</span> <span class="n">controlID</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">Yvalue</span><span class="p">))</span>
+             
+            <span class="k">if</span> <span class="n">controlID</span> <span class="o">==</span> <span class="s2">&quot;[HAND]gripper_wrist&quot;</span><span class="p">:</span>
+            
+                <span class="n">tempGoal</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gripper_wrist_min</span><span class="p">)</span><span class="o">+</span><span class="nb">abs</span><span class="p">(</span><span class="n">gripper_wrist_max</span><span class="p">))</span><span class="o">*</span><span class="n">Yvalue</span>
+                <span class="n">goal</span> <span class="o">=</span> <span class="n">gripper_wrist_max</span> <span class="o">-</span> <span class="n">tempGoal</span>
+            
+                <span class="n">hand_io</span><span class="o">.</span><span class="n">set_goal_position</span><span class="p">({</span><span class="n">gripper_wrist</span><span class="p">:</span><span class="n">goal</span><span class="p">})</span>
+                
+            <span class="k">elif</span> <span class="n">controlID</span> <span class="o">==</span> <span class="s2">&quot;[HAND]gripper_knuckle&quot;</span><span class="p">:</span>
+                <span class="n">speed</span> <span class="o">=</span> <span class="n">Yvalue</span><span class="o">*</span><span class="mi">200</span>
+            
+                <span class="n">hand_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">gripper_knuckle</span><span class="p">:</span><span class="n">speed</span><span class="p">})</span>
+            
+            <span class="k">elif</span> <span class="n">controlID</span> <span class="o">==</span> <span class="s2">&quot;[HAND]gripper_finger&quot;</span><span class="p">:</span>
+                <span class="n">tempGoal</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gripper_finger_min</span><span class="p">)</span><span class="o">+</span><span class="nb">abs</span><span class="p">(</span><span class="n">gripper_finger_max</span><span class="p">))</span><span class="o">*</span><span class="n">Yvalue</span>
+                <span class="n">goal</span> <span class="o">=</span> <span class="n">gripper_finger_max</span> <span class="o">-</span> <span class="n">tempGoal</span>
+            
+                <span class="n">hand_io</span><span class="o">.</span><span class="n">set_goal_position</span><span class="p">({</span><span class="n">gripper_finger</span><span class="p">:</span><span class="n">goal</span><span class="p">})</span></div>
+        
+            
+<div class="viewcode-block" id="ServerRobotController.onClose"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.ServerRobotController.onClose">[docs]</a>    <span class="k">def</span> <span class="nf">onClose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wasClean</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WebSocket connection closed: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reason</span><span class="p">))</span>
+        <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_one</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span>
+        <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_two</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span>
+        <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_three</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span></div>
+        
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">WebSocketServerProtocol</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    
+        <span class="c1">#for i in range(1,4):</span>
+        <span class="c1">#    base.set_ax_reg(i, REG_GOAL_POSITION_L, WHEEL_MODE)</span>
+        <span class="c1">#    base.set_ax_reg(i, REG_GOAL_POSITION_H, WHEEL_MODE)</span>
+            
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">GPIO</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+        <span class="nb">print</span> <span class="s2">&quot;Cleanup up Pi GPIO&quot;</span>
+        
+        <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_one</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span>
+        <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_two</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span>
+        <span class="n">base_io</span><span class="o">.</span><span class="n">set_moving_speed</span><span class="p">({</span><span class="n">wheels_three</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span>
+        <span class="nb">print</span> <span class="s2">&quot;Cleanup up Dynamixel&quot;</span>
+        
+        <span class="nb">print</span> <span class="s2">&quot;Server terminated...Have a nice day.&quot;</span></div>
+
+
+<div class="viewcode-block" id="start"><a class="viewcode-back" href="../../CHAP.html#CHAP.control_listener.start">[docs]</a><span class="k">def</span> <span class="nf">start</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">twisted.python</span> <span class="k">import</span> <span class="n">log</span>
+    <span class="kn">from</span> <span class="nn">twisted.python.logfile</span> <span class="k">import</span> <span class="n">DailyLogFile</span>
+    <span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="k">import</span> <span class="n">reactor</span>
+
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;devMode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>     
+        <span class="c1">#Setup WebSocket</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">startLogging</span><span class="p">(</span><span class="n">DailyLogFile</span><span class="o">.</span><span class="n">fromFullPath</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;release&#39;</span><span class="p">][</span><span class="s1">&#39;log&#39;</span><span class="p">]))</span>
+
+        <span class="n">factory</span> <span class="o">=</span> <span class="n">WebSocketServerFactory</span><span class="p">(</span><span class="s2">u&quot;ws://127.0.0.1:9001&quot;</span><span class="p">)</span>
+        <span class="n">factory</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="n">ServerRobotController</span>
+
+        <span class="n">reactor</span><span class="o">.</span><span class="n">listenTCP</span><span class="p">(</span><span class="mi">9001</span><span class="p">,</span> <span class="n">factory</span><span class="p">)</span>
+        <span class="n">reactor</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Dominic Cassidy.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
