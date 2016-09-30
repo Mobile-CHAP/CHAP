@@ -16,7 +16,22 @@ camera = Camera()
 # Capture camera frames when route activated (returns image source).
 @app.route('/video_feed/')
 def video_feed():
+    """
+    Handles continous return of current camera frame as part of a multpart HTTP response.
+    
+    - **return**::
+
+          :return: HTTP Response containing Multitype image byte.
+    """
     def gen():
+        """
+        Actual image capture loop. Captures frame every 0.033 seconds.
+        Wait is emplacement to avoid freezing thread and not allowing new clients to connect.
+        
+        - **return**::
+
+              :return: JPEG fram bytes
+        """
         while True:
             gevent.sleep(0.033)
             frame = camera.get_frame()
@@ -26,6 +41,9 @@ def video_feed():
     return Response(stream_with_context(gen()),mimetype='multipart/x-mixed-replace; boundary=frame')
     
 def start():
+    """
+    This function is used by CHAP main to start the server following user console command.
+    """
     print "Stream started, port:"+ str(PORT)
     
     pool = Pool(5)
