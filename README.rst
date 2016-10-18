@@ -29,7 +29,7 @@ Required binaries can be installed on Linux using the following command, Python 
 
 To correctly setup python please run the following commands/install the following libraries::
 
-	pip install gevent autobhan[twisted] flask pypot
+	pip install gevent autobahn[twisted] flask pypot
 
 Using git::
 
