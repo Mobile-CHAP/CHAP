@@ -40,5 +40,5 @@ The views and conclusions contained in the Package are those of the
 authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the FreeBSD Project. 
 
-*The CHAP team as of 14 November 2016 comprises: Guido Bugmann, Dominic 
-Cassidy, Arunaganesan Swaminathan, Khushdeep Singh Mann. 
+*The CHAP team as of 14 November 2016 comprises: Guido Bugmann,
+Dominic Cassidy, Arunaganesan Swaminathan, Khushdeep Singh Mann. 
